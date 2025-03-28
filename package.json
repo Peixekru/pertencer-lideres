@@ -1,0 +1,26 @@
+{
+  "name": "pertencer-lideres",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "stop:db": "docker-compose -f database/docker-compose.yml down",
+    "stop:ports": "kill-port --port 3000,5173",
+    "stop": "npm-run-all stop:db stop:ports",
+    "start:db": "docker-compose -f database/docker-compose.yml up -d",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm run dev",
+    "wait:db": "wait-port -t 30000 localhost:3306",
+    "start": "npm-run-all start:db wait:db -p start:backend start:frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "devDependencies": {
+    "wait-port": "^1.1.0"
+  }
+}

@@ -34,6 +34,21 @@ app.get('/api/check', async (req, res) => {
     }
 });
 
+app.get('/api/cards', async (req, res) => {
+    try {
+        const [cards] = await pool.query('SELECT id, title, content FROM card');
+        
+        res.status(200).json(cards);
+        
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({
+            status: 'ERROR',
+            message: 'Falha na conexão com o banco de dados'
+        });
+    }
+});
+
 // Iniciar servidor com desligamento gracioso
 const server = app.listen(3000, () => {
     console.log(`Backend rodando em http://localhost:3000`);

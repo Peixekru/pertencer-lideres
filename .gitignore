@@ -13,3 +13,6 @@ logs/
 
 # Docker/Mounts
 database/data/
+
+# macOS Files
+.DS_Store

@@ -1,7 +1,8 @@
 <template>
   <v-card>
     <v-card-title>
-      {{ cards === null ? 'Carregando...' : cards[0].title }}
+      <!--{{ cards === null ? 'Carregando...' : cards[0].title }}-->
+      Buscar texto do banco
     </v-card-title>
 
     <!--
@@ -10,19 +11,23 @@
     -->
 
     <v-card-text>
-      <v-icon icon="mdi-star" color="amber"></v-icon>
+      <v-icon
+        icon="mdi-star"
+        color="amber"
+      ></v-icon>
       Conteúdo perfeitamente alinhado
     </v-card-text>
   </v-card>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+  import { ref, onMounted } from 'vue'
+  import axios from 'axios'
 
-const cards = ref(null)
-const loading = ref(false)
+  const cards = ref(null)
+  const loading = ref(false)
 
+  /*
 // Função para buscar os dados do backend
 const fetchData = async () => {
   loading.value = true
@@ -40,4 +45,5 @@ const fetchData = async () => {
 onMounted(async () => {
   fetchData()
 })
+  */
 </script>

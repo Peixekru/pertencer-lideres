@@ -3,7 +3,7 @@ POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "login": "Teste Clone 16",
+  "login": "Teste Clone 45",
   "password": "123456",
   "spaceId": 1,
   "role": "admin"
@@ -15,8 +15,8 @@ POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-  "login": "44444444444",
-  "password": "444444"
+  "login": "Teste Clone 33",
+  "password": "123456"
 }
 
 ### 🔹 Gerar novo token (refresh)
@@ -45,18 +45,18 @@ GET http://localhost:3000/api/users
 Authorization: Bearer {{login.response.body.token}}
 
 ### 🔹 Buscar usuário por ID
-GET http://localhost:3000/api/users/1
+GET http://localhost:3000/api/users/51
 Authorization: Bearer {{login.response.body.token}}
 
 
 ### 🔹 Atualizar usuário
-PUT http://localhost:3000/api/users/3
+PUT http://localhost:3000/api/users/51
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.token}}
 
 {
-  "login": "44444444444",
-  "password": "444444"
+  "login": "6666666666",
+  "password": "666666"
 }
 
 
@@ -66,10 +66,23 @@ Authorization: Bearer {{login.response.body.token}}
 
 
 ### Consultar cursos do usuário
-GET http://localhost:3000/api/users/8/courses
+GET http://localhost:3000/api/users/52/courses
 Content-Type: application/json
 
 
 ### Buscar curso completo do usuário
-GET http://localhost:3000/api/user-courses/15/full
+GET http://localhost:3000/api/user-courses/39/course
 Content-Type: application/json
+
+
+### 🔹 Upload de imagem para a galeria do curso do usuário
+POST http://localhost:3000/api/user-courses/39/gallery/upload
+Content-Type: multipart/form-data; boundary=MYBOUNDARY
+Authorization: Bearer {{login.response.body.token}}
+
+--MYBOUNDARY
+Content-Disposition: form-data; name="image"; filename="img.png"
+Content-Type: image/png
+
+< /Users/tiagodiniz/Desktop/img.png
+--MYBOUNDARY--

@@ -24,7 +24,7 @@ apiService.interceptors.response.use(
         return apiService(error.config); // 🔹 Reenvia a requisição original com o novo token
       } else {
         authService.logout();
-        window.location.href = '/login'; // 🔹 Redireciona para login caso não consiga renovar
+        // window.location.href = '/'; // 🔹 Redireciona para login caso não consiga renovar
       }
     }
     return Promise.reject(error);

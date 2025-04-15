@@ -3,7 +3,7 @@ POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "login": "Teste Clone 45",
+  "login": "Teste Clone 66",
   "password": "123456",
   "spaceId": 1,
   "role": "admin"
@@ -71,12 +71,12 @@ Content-Type: application/json
 
 
 ### Buscar curso completo do usuário
-GET http://localhost:3000/api/user-courses/39/course
+GET http://localhost:3000/api/user-courses/58/course
 Content-Type: application/json
 
 
 ### 🔹 Upload de imagem para a galeria do curso do usuário
-POST http://localhost:3000/api/user-courses/39/gallery/upload
+POST http://localhost:3000/api/user-courses/58/gallery/upload
 Content-Type: multipart/form-data; boundary=MYBOUNDARY
 Authorization: Bearer {{login.response.body.token}}
 
@@ -85,4 +85,4 @@ Content-Disposition: form-data; name="image"; filename="img.png"
 Content-Type: image/png
 
 < /Users/tiagodiniz/Desktop/img.png
---MYBOUNDARY--
+--MYBOUNDARY--im

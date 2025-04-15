@@ -25,14 +25,14 @@ export const getUserCourseFromDB = async (userCourseId) => {
 
     // 2. Busca unidades
     const [units] = await conn.query(
-      `SELECT id, title, course_id FROM units WHERE course_id = ? ORDER BY order_index ASC`,
+      `SELECT id, course_id, title, image_url, progress FROM units WHERE course_id = ? ORDER BY order_index ASC`,
       [userCourse.course_id]
     );
 
     // 3. Busca lições para cada unidade
     for (const unit of units) {
       const [lessons] = await conn.query(
-        `SELECT id, title, unit_id, content_url FROM lessons WHERE unit_id = ? ORDER BY order_index ASC`,
+        `SELECT id, unit_id, title, image_url, duration, content_url, rating, is_completed FROM lessons WHERE unit_id = ? ORDER BY order_index ASC`,
         [unit.id]
       );
       unit.lessons = lessons;
@@ -68,8 +68,21 @@ export const getUserCourseFromDB = async (userCourseId) => {
       [userCourseId]
     );
 
+    // 8. Busca as capsulas do tempo associadas ao user_course
+    const [time_capsule] = await conn.query(
+      `SELECT id, start_date, send_date, email_adress, style, message FROM user_course_time_capsule WHERE user_course_id = ?`,
+      [userCourseId]
+    );
+
+    // 10. Busca a configuração do AI Chat associada ao user_course
+    const [ai_chat] = await conn.query(
+      `SELECT id, welcome_message, avatar_image_url, ai_model_name FROM user_course_ai_chat WHERE user_course_id = ? AND is_template = 0`,
+      [userCourseId]
+    );
+
+
     // 9. Monta o objeto final
-    return { ...userCourse, units, widgets, badges, settings, accessibility, gallery };
+    return { ...userCourse, units, widgets, badges, settings, accessibility, gallery, time_capsule, ai_chat };
 
   } finally {
     conn.release();

@@ -1,6 +1,4 @@
-import {
-  comparePassword
-} from '../services/cryptService.js';
+import { comparePassword } from '../utils/cryptService.js';
 
 import {
   generateAccessToken,
@@ -8,7 +6,7 @@ import {
   verifyRefreshToken,
   updateRefreshToken,
   clearRefreshToken
-} from '../services/tokenService.js';
+} from '../utils/tokenService.js';
 
 import { findUserByLogin, findUserByIdAndToken } from '../services/findUserService.js';
 

@@ -1,35 +1,46 @@
+// Função para clonar unidades de um curso template
 export const cloneUnits = async (conn, templateCourseId, newCourseId) => {
-    // PASSO 3: Clonar as unidades do curso template para o novo curso
-    const [units] = await conn.query(
-        'SELECT id, title, order_index, image_url, progress FROM units WHERE course_id = ? ORDER BY order_index ASC, id ASC',
-        [templateCourseId]
+  // Busca todas as unidades do curso template
+  const [units] = await conn.query(
+    `SELECT id, title, order_index, image_url, progress 
+    FROM units 
+    WHERE course_id = ? ORDER BY order_index ASC, id ASC`,
+    [templateCourseId]
+  );
+
+  // Mapa para armazenar relação entre IDs antigos e novos
+  const unitIdMap = {};
+
+  // Para cada unidade encontrada
+  for (const unit of units) {
+    // Insere a unidade no novo curso
+    const [unitResult] = await conn.query(
+      `INSERT INTO units (
+        course_id,
+        title,
+        order_index,
+        image_url,
+        progress
+      ) VALUES (?, ?, ?, ?, ?)`,
+      [
+        newCourseId,        // ID do novo curso
+        unit.title,         // Título da unidade
+        unit.order_index,   // Índice de ordem
+        unit.image_url,     // URL da imagem
+        unit.progress       // Progresso da unidade
+      ]
     );
 
-    const unitIdMap = {};
-    for (const unit of units) {
-        const [unitResult] = await conn.query(
-            'INSERT INTO units (course_id, title, order_index, image_url, progress) VALUES (?, ?, ?, ?, ?)',
-            [newCourseId, unit.title, unit.order_index, unit.image_url, unit.progress]
-        );
-        const newUnitId = unitResult.insertId;
-        if (!newUnitId) {
-            throw new Error(`Falha ao clonar unidade template ID ${unit.id}.`);
-        }
-        unitIdMap[unit.id] = newUnitId;
+    // Obtém e valida o ID da nova unidade
+    const newUnitId = unitResult.insertId;
+    if (!newUnitId) {
+      throw new Error(`Falha ao clonar unidade template ID ${unit.id}.`);
     }
 
-    // PASSO 4: Clonar as lições de cada unidade template para as novas unidades
-    for (const oldUnitId in unitIdMap) {
-        const newUnitId = unitIdMap[oldUnitId];
-        const [lessons] = await conn.query(
-            'SELECT title, content_url, order_index, image_url, duration, rating, is_completed FROM lessons WHERE unit_id = ? ORDER BY order_index ASC, id ASC',
-            [oldUnitId]
-        );
-        for (const lesson of lessons) {
-            await conn.query(
-                'INSERT INTO lessons (unit_id, title, content_url, order_index, image_url, duration, rating, is_completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                [newUnitId, lesson.title, lesson.content_url, lesson.order_index, lesson.image_url, lesson.duration, lesson.rating, lesson.is_completed]
-            );
-        }
-    }
+    // Armazena o mapeamento de IDs
+    unitIdMap[unit.id] = newUnitId;
+  }
+
+  // Retorna o mapa de IDs para uso na clonagem das lições
+  return unitIdMap;
 };

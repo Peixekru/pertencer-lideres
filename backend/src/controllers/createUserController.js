@@ -1,7 +1,7 @@
 import { createUserInDB } from '../services/createUserService.js';
 import { findUserByLogin } from '../services/findUserService.js';
-import { hashPassword } from '../services/cryptService.js';
-import { generateRefreshToken, updateRefreshToken } from '../services/tokenService.js';
+import { hashPassword } from '../utils/cryptService.js';
+import { generateRefreshToken, updateRefreshToken } from '../utils/tokenService.js';
 
 export const createUser = async (req, res) => {
   const { login, password, spaceId, role } = req.body;

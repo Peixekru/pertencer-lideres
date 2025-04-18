@@ -62,7 +62,32 @@
 </template>
 
 <script setup>
+  import { onMounted } from 'vue'
+  import { useCourseStore } from '@/store/course'
+  import { useAuthStore } from '@/store/auth'
   import SwithTheme from '@/components/SwithTheme.vue'
   import CardContent from '@/components/CardContent.vue'
   import Logout from '@/components/Logout.vue'
+  import logger from '#logger'
+
+  const courseStore = useCourseStore()
+  const authStore = useAuthStore()
+
+  onMounted(async () => {
+    logger.inf(authStore.user, authStore.token)
+
+    const userId = authStore.user.id
+
+    const courses = await courseStore.fetchUserCourses(userId)
+    logger.inf('\n\nLista de cursos:\n\n', JSON.stringify(courses, null, 2))
+
+    if (courses && courses.length > 0) {
+      const firstUserCourse = courses[0]
+      await courseStore.fetchUserCourseDetails(firstUserCourse.user_course_id)
+      logger.inf(
+        '\n\nPrimeiro curso da lista:\n\n',
+        JSON.stringify(courseStore.currentCourse, null, 2),
+      )
+    }
+  })
 </script>

@@ -24,8 +24,7 @@ router.get('/users/:id', getUserById);           // Buscar por ID
 router.put('/users/:id', updateUserById);        // Atualizar
 router.delete('/users/:id', deleteUserById);     // Deletar
 
-// --- Rota Adicionada para Upload em Massa
+//Cadastro em Massa - (Opcional: middleware de autenticação/autorização)
 router.post('/users/bulk-upload', /* Exemplo: isAdmin, */ uploadCsv.single('csvFile'), bulkCreateUsersController);
-// --- Fim da Rota Adicionada
 
 export default router;

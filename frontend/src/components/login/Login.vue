@@ -84,6 +84,7 @@
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/store/auth'
   import { useSystemStore } from '@/store/system'
+  import logger from '#logger'
 
   //Sons dos botões
   import { useBeepSound } from '@/components/composables/useSounds'
@@ -104,7 +105,7 @@
   //localStorage.removeItem("userInfos");
 
   const handleLogin = async () => {
-    console.log('Tentando login com:', username.value, password.value)
+    logger.inf('login - envia:', username.value, password.value)
 
     if (!username.value || username.value.length !== 11 || !password.value) {
       systemStore.globalMsg('Oops! Seu login precisa ter 11 caracteres', 'error')

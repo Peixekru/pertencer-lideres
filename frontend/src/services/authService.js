@@ -1,19 +1,20 @@
 import apiService from './apiService';
 import storageService from './storageService';
+import refreshLockService from './refreshLockService';
+import logger from '#logger';
 
 const authService = {
   async login(login, password) {
     try {
-      const response = await apiService.post('/login', { login, password });
+      const response = await apiService.post('/login', { login, password }, { withCredentials: true });
 
-      if (response.data?.token && response.data?.refreshToken) {
+      logger.inf('login - retorno do backend', response.data)
+
+      if (response.data?.user) {
         storageService.setItem('user', response.data.user, true);
-        storageService.setItem('token', response.data.token);
-        storageService.setItem('refresh_token', response.data.refreshToken);
-        storageService.setItem('token_expiration', Date.now() + 3600000);
         return response.data;
       } else {
-        throw new Error('Token não recebido.');
+        throw new Error('Usuário não recebido.');
       }
     } catch (error) {
       console.error('Erro no login:', error.response?.data || error.message);
@@ -21,50 +22,60 @@ const authService = {
     }
   },
 
-  logout() {
+  async logout() {
+    try {
+      await apiService.post('/logout', {}, { withCredentials: true });
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error.response?.data || error.message);
+      // Não precisa lançar um erro aqui, o logout local ainda deve ocorrer
+    }
     storageService.removeItem('user');
-    storageService.removeItem('token');
-    storageService.removeItem('refresh_token');
-    storageService.removeItem('token_expiration');
+    // Remove a lógica de roteamento daqui
   },
 
   getUserFromStorage() {
+    logger.err('getUserFromStorage', storageService.getItem('user', true))
     return storageService.getItem('user', true);
-  },
-
-  getToken() {
-    return storageService.getItem('token');
-  },
-
-  getRefreshToken() {
-    return storageService.getItem('refresh_token');
-  },
-
-  isTokenValid() {
-    const expiration = storageService.getItem('token_expiration');
-    return expiration ? Date.now() < expiration : false;
   },
 
   async refreshToken() {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
-      if (!refreshToken) return false;
+      // Se outra aba está fazendo o refresh, aguarda
+      if (refreshLockService.isLocked()) {
+        console.log('🕒 Aguardando outra aba terminar o refresh...');
+        await refreshLockService.waitForUnlock();
 
-      const response = await apiService.post('/refresh-token', { refreshToken });
+        const user = storageService.getItem('user', true);
+        return !!user; // ✅ só continua se outra aba realmente salvou o user
+      }
 
-      console.log('novo refresh token', response.data);
+      // Trava o refresh nessa aba
+      refreshLockService.setLock();
 
-      localStorage.setItem('token', response.data.token); // 🔹 Mantendo o nome original
-      localStorage.setItem('refresh_token', response.data.refreshToken);
-      storageService.setItem('token_expiration', Date.now() + 3600000);
+      // Faz a requisição para renovar o token
+      const response = await apiService.post('/refresh-token', {}, { withCredentials: true });
 
-      return true;
+      logger.err('refreshToken função', response.data)
+
+      // Salva os dados do usuário retornados (se houver)
+      if (response.data?.user) {
+        storageService.setItem('user', response.data.user, true);
+      }
+
+      refreshLockService.removeLock();
+
+      return { isDone: !!response.data, token: response.data.token };
     } catch (error) {
+      refreshLockService.removeLock();
+
+      // ⚠️ Apaga o usuário do storage se o refresh falhar
+      storageService.removeItem('user');
+
       console.error('Erro ao renovar token:', error);
-      return false;
+
+      return false; // Indica que o refresh falhou
     }
   }
-
 };
 
 export default authService;

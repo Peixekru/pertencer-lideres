@@ -3,7 +3,7 @@ POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "login": "Teste Clone 69",
+  "login": "Teste Clone 71",
   "password": "123456",
   "spaceId": 1,
   "role": "admin"
@@ -15,8 +15,8 @@ POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-  "login": "Teste Clone 33",
-  "password": "123456"
+  "login": "11111111111",
+  "password": "111111"
 }
 
 ### 🔹 Gerar novo token (refresh)
@@ -71,7 +71,7 @@ Content-Type: application/json
 
 
 ### Buscar curso completo do usuário
-GET http://localhost:3000/api/user-courses/91/course
+GET http://localhost:3000/api/user-courses/172/course
 Content-Type: application/json
 
 

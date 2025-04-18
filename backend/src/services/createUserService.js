@@ -1,5 +1,5 @@
 import pool from '../config/database.js';
-import { cloneCourseHierarchy } from './cloneCourseService/cloneCourseService.js';
+import { cloneCourseHierarchy } from '#cloneCourseService';
 
 
 export const createUserInDB = async (login, hashedPassword, refreshToken, spaceId, role) => {

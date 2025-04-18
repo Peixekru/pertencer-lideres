@@ -35,6 +35,7 @@
             </v-col>
           </v-row>
 
+          <Logout />
           <!--Componente que modifica o tema da aplicação-->
           <SwithTheme />
 
@@ -63,4 +64,5 @@
 <script setup>
   import SwithTheme from '@/components/SwithTheme.vue'
   import CardContent from '@/components/CardContent.vue'
+  import Logout from '@/components/Logout.vue'
 </script>

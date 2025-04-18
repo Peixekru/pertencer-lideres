@@ -1,5 +1,5 @@
 // Importa o serviço de criação em massa de usuários
-import { bulkCreateUsersService } from '../services/bulkCreateUsersService.js';
+import { bulkCreateUsersService } from '#bulkCreateUsersService';
 
 export const bulkCreateUsersController = async (req, res) => {
   // Verifica se o arquivo CSV foi enviado na requisição

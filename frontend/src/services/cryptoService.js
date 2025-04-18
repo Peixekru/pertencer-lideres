@@ -1,9 +1,11 @@
 import CryptoJS from 'crypto-js';
+import logger from '#logger';
 
 const SECRET_KEY = 'minha-chave-secreta';
 
 const cryptoService = {
     encrypt(data) {
+        logger.inf('login - para criptografar', data)
         return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString();
     },
 

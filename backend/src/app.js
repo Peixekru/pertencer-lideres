@@ -1,14 +1,26 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
+// Routes
 import authRoutes from './routes/authRoutes.js';
 import statusRoutes from './routes/statusRoutes.js';
 import usersRoutes from './routes/usersRoutes.js';
 import userCoursesRoutes from './routes/userCoursesRoutes.js';
 
 const app = express();
-app.use(cors());
+
+// Configuração do CORS
+const corsOptions = {
+  origin: 'http://localhost:5173',  // Permite apenas o frontend
+  credentials: true,                // Permite enviar cookies com a requisição
+};
+
+app.use(cors(corsOptions));
+
+// Middlewares
 app.use(express.json());
+app.use(cookieParser());
 
 // Caminho para a pasta 'dist' gerada pelo Vite
 const frontendDistPath = path.join(process.cwd(), '../frontend/dist');

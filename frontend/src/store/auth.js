@@ -1,51 +1,62 @@
 import { defineStore } from 'pinia';
 import authService from '@/services/authService';
+import logger from '#logger'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: authService.getUserFromStorage(),
-    tokenValid: authService.isTokenValid(),
+    user: null,
+    token: null,
+    _refreshInterval: null // controle do intervalo
   }),
 
   actions: {
     async login(login, password) {
       const data = await authService.login(login, password);
       this.user = data.user;
-      this.tokenValid = true;
+      this.token = data.token;
+      logger.inf('login - salvo no state', data.user, data.token)
+      this.startTokenRefreshInterval(); // inicia o auto-refresh
     },
 
-    logout() {
-      authService.logout();
+    async logout() {
+      await authService.logout();
       this.user = null;
-      this.tokenValid = false;
-    },
-
-    async checkAuth() {
-      if (!authService.isTokenValid()) {
-        console.log('🔄 Token expirado. Tentando renovar...');
-        const refreshed = await this.refreshToken();
-        this.tokenValid = refreshed;
-      }
-
-      if (!this.tokenValid) {
-        console.warn('🔴 Falha na renovação do token. Deslogando...');
-        this.logout();
-      }
+      this.stopTokenRefreshInterval(); // para o auto-refresh
     },
 
     async refreshToken() {
-      console.log('🔄 Chamando refreshToken() dentro da store...');
       const refreshed = await authService.refreshToken();
-      this.tokenValid = refreshed;
-      return refreshed;
+      if (!refreshed.isDone) {
+        await this.logout();
+      }
+      logger.deb('token - validado', refreshed.isDone, refreshed.token)
+      this.token = refreshed.token;
+      return refreshed.isDone;
     },
 
-    hydrate(state) {
-      if (authService.isTokenValid()) {
-        state.user = authService.getUserFromStorage();
-      } else {
-        authService.logout();
+    startTokenRefreshInterval() {
+      this.stopTokenRefreshInterval(); // evita duplicidade
+      this._refreshInterval = setInterval(async () => {
+        const success = await this.refreshToken();
+        if (!success) {
+          this.logout();
+        }
+      }, 50 * 60 * 1000); // 50 minutos
+      logger.war('Interval - inicio')
+    },
+
+    stopTokenRefreshInterval() {
+      if (this._refreshInterval) {
+        clearInterval(this._refreshInterval);
+        this._refreshInterval = null;
       }
-    }
+      logger.war('Interval - fim')
+    },
+
+    hydrate() {
+      this.user = authService.getUserFromStorage();
+      //this.startTokenRefreshInterval();
+      logger.err('função - hydrate', this.user)
+    },
   }
 });

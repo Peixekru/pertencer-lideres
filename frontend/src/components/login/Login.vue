@@ -101,9 +101,6 @@
   const password = ref('')
   const username = ref('')
 
-  //Limpa informações do usuário persistentes
-  //localStorage.removeItem("userInfos");
-
   const handleLogin = async () => {
     logger.inf('login - envia:', username.value, password.value)
 

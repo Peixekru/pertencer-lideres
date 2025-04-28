@@ -1,16 +1,18 @@
 // Função para criar a relação entre usuário e curso
 export const cloneUserCourse = async (conn, userId, newCourseId, version) => {
-  // Insere o registro vinculando o usuário ao novo curso
+  // Insere o registro vinculando o usuário ao novo curso, incluindo todos os campos
   const [userCourseResult] = await conn.query(
     `INSERT INTO user_courses (
       user_id,
       course_id,
-      current_version
-    ) VALUES (?, ?, ?)`,
+      current_version,
+      joined_at
+    ) VALUES (?, ?, ?, ?)`,
     [
       userId,         // ID do usuário
       newCourseId,    // ID do novo curso
-      version         // Versão do curso
+      version,         // Versão do curso
+      new Date()       // Data e hora de quando o usuário se juntou ao curso (agora)
     ]
   );
 

@@ -74,12 +74,15 @@
   const authStore = useAuthStore()
 
   onMounted(async () => {
-    logger.inf(authStore.user, authStore.token)
+    logger.stDeb('Infos de login:', authStore.user, authStore.token)
 
     const userId = authStore.user.id
 
     const courses = await courseStore.fetchUserCourses(userId)
-    logger.inf('\n\nLista de cursos:\n\n', JSON.stringify(courses, null, 2))
+    logger.stErr(courses)
+
+    //logger.st.inf(courses)
+    //logger.inf('\n\nLista de cursos:\n\n', JSON.stringify(courses, null, 2))
 
     if (courses && courses.length > 0) {
       const firstUserCourse = courses[0]

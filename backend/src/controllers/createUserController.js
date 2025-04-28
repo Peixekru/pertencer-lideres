@@ -1,7 +1,7 @@
 import { createUserInDB } from '../services/createUserService.js';
 import { findUserByLogin } from '../services/findUserService.js';
 import { hashPassword } from '../utils/cryptService.js';
-import { generateRefreshToken, updateRefreshToken } from '../utils/tokenService.js';
+import { generateRefreshToken /* , updateRefreshToken */ } from '../utils/tokenService.js';
 
 export const createUser = async (req, res) => {
   const { login, password, spaceId, role } = req.body;
@@ -20,7 +20,14 @@ export const createUser = async (req, res) => {
     const refreshToken = generateRefreshToken(login);
     const userId = await createUserInDB(login, hashedPassword, refreshToken, spaceId, role);
 
-    await updateRefreshToken(userId, refreshToken);
+    //await updateRefreshToken(userId, refreshToken);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Envia apenas via HTTPS em produção
+      sameSite: 'strict', // Proteção contra ataques CSRF (ajuste conforme necessidade)
+      maxAge: 7 * 24 * 60 * 60 * 1000, // Tempo de vida do cookie (7 dias, igual ao token)
+    });
 
     res.status(201).json({
       user: { id: userId, login, spaceId, role }, refreshToken

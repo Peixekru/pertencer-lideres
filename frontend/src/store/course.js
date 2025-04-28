@@ -19,7 +19,6 @@ export const useCourseStore = defineStore('course', {
 
     async fetchUserCourseDetails(userCourseId) {
       const { data } = await axios.get(`/user-courses/${userCourseId}/course`)
-      this.userCourseDetails = data
       this.currentCourse = data
       return data
     }

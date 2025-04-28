@@ -1,8 +1,15 @@
 // Função para clonar a galeria de imagens de um curso template para um novo curso
 export const cloneGallery = async (conn, sourceTemplateUserCourseId, newUserCourseId) => {
-  // Busca todas as imagens da galeria do curso template
+  // Busca todas as imagens da galeria do curso template, incluindo todos os campos
   const [galleryToClone] = await conn.query(
-    `SELECT thumb_url, image_url, is_public FROM user_course_gallery WHERE user_course_id = ?`,
+    `SELECT 
+      thumb_url, 
+      image_url, 
+      is_public,
+      uploaded_at,
+      template_user_course_id
+    FROM user_course_gallery 
+    WHERE user_course_id = ?`,
     [sourceTemplateUserCourseId]
   );
 
@@ -15,15 +22,16 @@ export const cloneGallery = async (conn, sourceTemplateUserCourseId, newUserCour
         thumb_url, 
         image_url, 
         is_public, 
-        template_user_course_id, 
-        uploaded_at
-      ) VALUES (?, ?, ?, ?, ?, NOW())`,
+        uploaded_at,
+        template_user_course_id
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
       [
-        newUserCourseId,              // ID do novo curso do usuário
-        image.thumb_url,              // URL da miniatura
-        image.image_url,              // URL da imagem original
-        image.is_public,              // Flag se é pública
-        sourceTemplateUserCourseId    // ID do curso template original
+        newUserCourseId,                 // ID do novo curso do usuário
+        image.thumb_url,                 // URL da miniatura
+        image.image_url,                 // URL da imagem original
+        image.is_public,                 // Flag se é pública
+        image.uploaded_at,               // Data e hora do upload
+        image.template_user_course_id    // ID do curso template original (pode ser nulo)
       ]
     );
   }

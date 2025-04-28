@@ -1,25 +1,28 @@
-### 🔹 Criar um novo usuário
+###  Criar um novo usuário
+# spaceId: 1 -> pertencer_lideres
+# role - adimin, manager, suport, user
+
 POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "login": "00000000000",
-  "password": "000000",
+  "login": "user_000001",
+  "password": "user_000001",
   "spaceId": 1,
-  "role": "admin"
+  "role": "user"
 }
 
-### 🔹 Login
+###  Login
 # @name login
 POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-  "login": "11111111111",
-  "password": "111111"
+  "login": "admin",
+  "password": "admin"
 }
 
-### 🔹 Gerar novo token (refresh)
+###  Gerar novo token (refresh)
 POST http://localhost:3000/api/refresh-token
 Content-Type: application/json
 
@@ -27,7 +30,7 @@ Content-Type: application/json
   "refreshToken": "{{login.response.body.refreshToken}}"
 }
 
-### 🔹 Logout
+###  Logout
 POST http://localhost:3000/api/logout
 Content-Type: application/json
 
@@ -35,48 +38,48 @@ Content-Type: application/json
   "refreshToken": "{{login.response.body.refreshToken}}"
 }
 
-### 🔹 Acesso a rota protegida (status)
+###  Acesso a rota protegida (status)
 GET http://localhost:3000/api/status
 Authorization: Bearer {{login.response.body.token}}
 
 
-### 🔹 Buscar todos os usuários
+###  Buscar todos os usuários
 GET http://localhost:3000/api/users
 Authorization: Bearer {{login.response.body.token}}
 
-### 🔹 Buscar usuário por ID
-GET http://localhost:3000/api/users/114
+###  Buscar usuário por ID
+GET http://localhost:3000/api/users/1
 Authorization: Bearer {{login.response.body.token}}
 
 
-### 🔹 Atualizar usuário
-PUT http://localhost:3000/api/users/93
+###  Atualizar usuário
+PUT http://localhost:3000/api/users/2
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.token}}
 
 {
-  "login": "77777777777",
-  "password": "777777"
+  "login": "new_login_2",
+  "password": "new_login_2"
 }
 
 
-### 🔹 Deletar usuário
-DELETE http://localhost:3000/api/users/4
+###  Deletar usuário
+DELETE http://localhost:3000/api/users/2
 Authorization: Bearer {{login.response.body.token}}
 
 
 ### Consultar cursos do usuário
-GET http://localhost:3000/api/users/52/courses
+GET http://localhost:3000/api/users/3/courses
 Content-Type: application/json
 
 
 ### Buscar curso completo do usuário
-GET http://localhost:3000/api/user-courses/200/course
+GET http://localhost:3000/api/user-courses/3/course
 Content-Type: application/json
 
 
 ### 🔹 Upload de imagem para a galeria do curso do usuário
-POST http://localhost:3000/api/user-courses/61/gallery/upload
+POST http://localhost:3000/api/user-courses/3/gallery/upload
 Content-Type: multipart/form-data; boundary=MYBOUNDARY
 Authorization: Bearer {{login.response.body.token}}
 
@@ -84,7 +87,7 @@ Authorization: Bearer {{login.response.body.token}}
 Content-Disposition: form-data; name="image"; filename="img.png"
 Content-Type: image/png
 
-< /Users/tiagodiniz/Desktop/img.png
+< ./gallery_image_template.png
 --MYBOUNDARY--im
 
 
@@ -97,5 +100,5 @@ Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0g
 Content-Disposition: form-data; name="csvFile"; filename="usuarios_teste.csv"
 Content-Type: text/csv
 
-< /Users/tiagodiniz/Desktop/usuarios_teste.csv
+< ./bulk_create_user_temlpate.csv
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--

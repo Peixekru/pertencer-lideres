@@ -1,14 +1,19 @@
 import app from './src/app.js';
 
-const PORT = process.env.PORT || 3000;
+// Lê as variáveis do .env para servidor
+const isProduction = process.env.NODE_ENV === 'production'; // Verifica se está em produção
 
-const server = app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+// Usa as variáveis conforme o ambiente ( Produção ou Desenvolvimento)
+const HOST = isProduction ? process.env.SERVER_HOST_PROD : process.env.SERVER_HOST_DEV;
+const PORT = isProduction ? process.env.SERVER_PORT_PROD : process.env.SERVER_PORT_DEV;
+
+const server = app.listen(PORT, HOST, () => {
+    console.log(`🚀 Servidor rodando em http://${HOST}:${PORT}`);
 });
 
 process.on('SIGINT', () => {
     server.close(() => {
-        console.log('🛑 Servidor encerrado');
+        console.log('❌ Servidor encerrado');
         process.exit(0);
     });
 });

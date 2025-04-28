@@ -1,37 +1,64 @@
-// Clona um curso template
+// Clona um curso template incluindo todos os campos necessários
 export const cloneCourse = async (conn, templateCourseId, spaceId) => {
-  // Buscar dados do curso template original
+  // Buscar dados completos do curso template original
   const [courseRows] = await conn.query(
-    `SELECT title, subtitle, version 
+    `SELECT
+      title,
+      subtitle,
+      version,
+      in_app_tutorial,
+      background_color_1,
+      background_color_2,
+      background_image_url,
+      is_completed,
+      progress
     FROM courses
     WHERE id = ? AND is_template = 1`,
     [templateCourseId]
   );
+
   // Verifica se encontrou o curso template
   if (!courseRows || courseRows.length === 0) {
     throw new Error(`Curso template com ID ${templateCourseId} não encontrado.`);
   }
   const templateCourse = courseRows[0];
 
-  // Criar o novo curso (clone) na tabela 'courses'
-  const [insertCourseResult] = await conn.query(
-    `INSERT INTO courses (
+  const query = `
+    INSERT INTO courses (
       title,
       subtitle,
       version,
-      is_template,
-      template_course_id,
       space_id,
-      created_at
-    ) VALUES (?, ?, ?, 0, ?, ?, NOW())`,
-    [
-      templateCourse.title,       // Título do novo curso
-      templateCourse.subtitle,    // Subtítulo do novo curso
-      templateCourse.version,     // Versão do novo curso
-      templateCourseId,           // ID do curso template original
-      spaceId                     // ID do espaço / agrupador
-    ]
-  );
+      template_course_id,
+      in_app_tutorial,
+      is_completed,
+      progress,
+      background_color_1,
+      background_color_2,
+      background_image_url,
+      is_template,
+      created_at,
+      updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+
+  const values = [
+    templateCourse.title,
+    templateCourse.subtitle,
+    templateCourse.version,
+    spaceId,
+    templateCourseId,
+    JSON.stringify(templateCourse.in_app_tutorial),
+    templateCourse.is_completed || 0,
+    templateCourse.progress || 0,
+    templateCourse.background_color_1,
+    templateCourse.background_color_2,
+    templateCourse.background_image_url,
+    0 // is_template
+  ];
+
+  // Criar o novo curso (clone) na tabela 'courses' com todos os campos
+  const [insertCourseResult] = await conn.query(query, values);
+
   // Obtém e valida o ID do novo curso criado
   const newCourseId = insertCourseResult.insertId;
   if (!newCourseId) {

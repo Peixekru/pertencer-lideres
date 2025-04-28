@@ -1,30 +1,33 @@
 // Função para clonar badges de um curso template para um novo curso
 export const cloneBadges = async (conn, sourceTemplateUserCourseId, newUserCourseId) => {
-  // Busca todos os badges do curso template que devem ser clonados
+  // Busca todos os badges do curso template, incluindo todos os campos
   const [badgesToClone] = await conn.query(
-    `SELECT id as template_badge_id, config 
-      FROM user_course_badges 
-      WHERE user_course_id = ? AND is_template = 1`,
+    `SELECT 
+      config, 
+      is_template, 
+      template_user_course_id
+    FROM user_course_badges 
+    WHERE user_course_id = ?`,
     [sourceTemplateUserCourseId]
   );
 
   // Itera sobre cada badge encontrado
   for (const badge of badgesToClone) {
-    // Verifica se a configuração do badge é válida (objeto não nulo)
-    if (!badge.config || typeof badge.config !== 'object') continue;
-
-    // Insere o badge clonado na tabela de badges
+    // Insere o badge clonado na tabela de badges, incluindo todos os campos
     await conn.query(
       `INSERT INTO user_course_badges (
         user_course_id,  
         config, 
         is_template, 
-        template_user_course_id
-      ) VALUES (?, ?, 0, ?)`,
+        template_user_course_id,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?)`,
       [
-        newUserCourseId,                // ID do novo curso do usuário
-        JSON.stringify(badge.config),   // Configuração do badge serializada
-        sourceTemplateUserCourseId      // ID do curso template original
+        newUserCourseId,                 // ID do novo curso do usuário
+        JSON.stringify(badge.config),    // Configuração do badge (já é JSON)
+        0,                               // is_template para o novo badge é 0
+        badge.template_user_course_id,   // ID do curso template original (pode ser nulo)
+        new Date()                       // Data e hora da clonagem
       ]
     );
   }

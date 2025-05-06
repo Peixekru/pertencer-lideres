@@ -1,5 +1,5 @@
 <template>
-  <v-app :theme="theme.global.name.value">
+  <v-app>
     <RouterView />
   </v-app>
 </template>

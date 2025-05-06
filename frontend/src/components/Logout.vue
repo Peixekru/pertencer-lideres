@@ -13,6 +13,5 @@
 
   const handleLogout = async () => {
     await authStore.logout()
-    router.push('/') // Redireciona para a página de login
   }
 </script>

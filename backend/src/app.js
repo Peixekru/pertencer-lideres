@@ -4,6 +4,7 @@ import path from 'path';
 import corsConfig from './middlewares/corsConfigMiddleware.js';
 // Routes
 import authRoutes from './routes/authRoutes.js';
+import spacesRoutes from './routes/spacesRoutes.js';
 import statusRoutes from './routes/statusRoutes.js';
 import usersRoutes from './routes/usersRoutes.js';
 import userCoursesRoutes from './routes/userCoursesRoutes.js';
@@ -24,6 +25,7 @@ app.use('/api', statusRoutes);
 app.use('/api', authRoutes);
 app.use('/api', usersRoutes);
 app.use('/api', userCoursesRoutes);
+app.use('/api', spacesRoutes);
 
 // Servindo arquivos estáticos da pasta 'uploads'
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

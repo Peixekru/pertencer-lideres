@@ -6,7 +6,7 @@ const storageService = {
     const data = encrypt ? cryptoService.encrypt(value) : value;
     localStorage.setItem(key, data);
 
-    logger.inf('login - salva no localstorage', key, data)
+    logger.stInf('Salvo no localstorage', `key: ${key}`, `data: ${data}`)
   },
 
   getItem(key, decrypt = false) {

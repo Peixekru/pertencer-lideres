@@ -10,6 +10,7 @@
       class="mx-auto my-8"
       max-width="220"
       src="@/assets/imgs/login-top-logo.svg"
+      alt="Logo do topo"
     />
 
     <div class="text-subtitle-1 text-medium-emphasis">Login</div>
@@ -23,6 +24,7 @@
       prepend-inner-icon="mdi-account-outline"
       placeholder="CPF"
       color="secondary"
+      aria-label="Campo para inserir CPF"
     />
 
     <div class="text-subtitle-1 text-medium-emphasis">Senha</div>
@@ -36,6 +38,7 @@
       placeholder="- - -"
       color="secondary"
       @click:append-inner="isVisible = !isVisible"
+      aria-label="Campo para inserir senha"
     />
 
     <v-btn
@@ -45,6 +48,7 @@
       size="large"
       rounded
       @click="handleLogin"
+      aria-label="Botão para entrar"
     >
       Entrar
     </v-btn>
@@ -56,6 +60,7 @@
       append-icon="mdi-chevron-right"
       class="text-center reset-text-transform text-primary mt-6"
       @click="$emit('handlePass', true)"
+      aria-label="Botão para recuperar senha"
     >
       Esqueci minha senha
     </v-btn>
@@ -66,6 +71,7 @@
       variant="text"
       class="text-center font-weight-bold text-primary mt-2 mb-4"
       @click="$emit('handleMail', true)"
+      aria-label="Botão para obter ajuda"
     >
       Precisa de ajuda?
     </v-btn>
@@ -75,6 +81,7 @@
       :class="systemStore.isDarkMode ? 'white-svg' : ''"
       max-width="250"
       src="@/assets/imgs/login-footer-logo.svg"
+      alt="Logo do rodapé"
     />
   </v-card>
 </template>
@@ -84,10 +91,10 @@
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/store/auth'
   import { useSystemStore } from '@/store/system'
-  import logger from '#logger'
-
   //Sons dos botões
   import { useBeepSound } from '@/components/composables/useSounds'
+  //Logger
+  import logger from '#logger'
 
   //Inicia a store
   const router = useRouter()
@@ -102,25 +109,27 @@
   const username = ref('')
 
   const handleLogin = async () => {
-    logger.inf('login - envia:', username.value, password.value)
+    logger.stInf('handleLogin:', `username: ${username.value}`, `password: ${password.value}`)
 
     if (!username.value || username.value.length !== 11 || !password.value) {
       systemStore.globalMsg('Oops! Seu login precisa ter 11 caracteres', 'error')
-      alert('Oops! Seu login precisa ter 11 caracteres') // 🔹 Exibe o alerta
+      // HIGHLIGHT: next line - mensagem de erro
+      //  alert('Oops! Seu login precisa ter 11 caracteres') // Exibe o alerta
       return
     }
 
     try {
+      // store / outh . login  -->  response { user:{ id , login } token: token }
       await authStore.login(username.value, password.value)
-      alert('Login realizado com sucesso!')
-      router.push('/home') // Redirecionamento no componente
+      // HIGHLIGHT: next line - mensagem de sucesso
+      // alert('Login realizado com sucesso!')
+      router.push('/home')
     } catch (error) {
       alert(error.message || 'Erro ao fazer login.')
     }
   }
 
   onMounted(() => {
-    systemStore.logginStatus = false
     useBeepSound()
   })
 </script>

@@ -1,44 +1,60 @@
 import axios from 'axios';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/store/auth';
+import { getActivePinia } from 'pinia';
+import { getCookie } from '@/utils/cookie';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api', /* import.meta.env.VITE_API_URL, // exemplo: 'http://localhost:3000/api' */
-  withCredentials: true, // necessário para enviar o cookie com o refreshToken
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
 });
 
-// Interceptor de resposta para tratar 401
+// Interceptor para injetar o token antes de cada request
+api.interceptors.request.use((config) => {
+  const authStore = useAuthStore(getActivePinia());
+  const token = authStore.token;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+// Interceptor para lidar com erros (ex: token expirado)
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url.includes('/login') &&
-      !originalRequest.url.includes('/refresh')
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const auth = useAuthStore();
+      const authStore = useAuthStore(getActivePinia());
+      const hasRefreshToken = getCookie('refreshToken');
+
+      if (!hasRefreshToken) {
+        await authStore.logout();
+        return Promise.reject(error);
+      }
 
       try {
-        const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
+        // Tenta renovar o token
+        const { data } = await axios.post(`${baseURL}/refresh-token`, {}, { withCredentials: true });
 
-        auth.setToken(data.token); // Atualiza o access token no Pinia
+        // Atualiza store com o novo token e user
+        authStore.token = data.token;
+        authStore.user = data.user;
+
+        // Atualiza o header da request original
         originalRequest.headers.Authorization = `Bearer ${data.token}`;
 
-        return api(originalRequest); // Reenvia a requisição original
+        // Refaz a request
+        return api(originalRequest);
       } catch (refreshError) {
-        auth.logout(); // Se falhar no refresh, força logout
+        await authStore.logout();
         return Promise.reject(refreshError);
       }
     }
-
     return Promise.reject(error);
   }
 );

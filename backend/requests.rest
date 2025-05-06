@@ -74,7 +74,7 @@ Content-Type: application/json
 
 
 ### Buscar curso completo do usuário
-GET http://localhost:3000/api/user-courses/3/course
+GET http://localhost:3000/api/user-courses/2/course
 Content-Type: application/json
 
 
@@ -102,3 +102,9 @@ Content-Type: text/csv
 
 < ./bulk_create_user_temlpate.csv
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+### 🔹 Buscar Space pelo nome (ex: pertencer_lideres)
+GET http://localhost:3000/api/space/pertencer_lideres
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}

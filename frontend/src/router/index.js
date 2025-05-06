@@ -2,47 +2,46 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import logger from '#logger'
 
+// Define as rotas da aplicação
 const routes = [
   {
-    path: '/',
+    path: '/', // Rota raiz
     name: 'Login',
-    component: () => import('@/views/LoginView.vue')
+    component: () => import('@/views/LoginView.vue') // Lazy loading do componente
   },
   {
-    path: '/Home',
+    path: '/Home', // Rota da página principal
     name: 'Home',
-    component: () => import('@/views/HomeView.vue'),
-    meta: { requiresAuth: true } // 🔒 Rota protegida
+    component: () => import('@/views/HomeView.vue'), // Lazy loading do componente
+    meta: { requiresAuth: true } // 🔒 Rota protegida (requer autenticação)
   }
 ];
 
+// Cria a instância do roteador Vue
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  history: createWebHistory(import.meta.env.BASE_URL), // Configura o modo de histórico
+  routes // Define as rotas
 });
 
 // 🔐 Middleware global de autenticação
+// Executado antes de cada navegação
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore();
+  const authStore = useAuthStore(); // Acessa o store de autenticação
 
+  // Verifica se a rota requer autenticação
   if (to.meta.requiresAuth) {
-    // Se não tem user ou token expirou, tenta renovar
+    // Se não tem usuário logado ou token expirado, tenta renovar
     if (!authStore.user) {
-      logger.log(authStore.user)
       const refreshed = await authStore.refreshToken();
-      logger.log('token - refreshToken vindo do router')
-
       if (!refreshed) {
-        authStore.logout();
-        return next({ name: 'Login' });  // Garante que o usuário será redirecionado ao login
+        authStore.logout(); // Faz logout se não conseguir renovar
+        return next({ name: 'Login' });  // Redireciona para login
       }
-
-      // Re-hidrata o user do storage após renovar
+      // Re-hidrata o usuário do storage após renovar o token
       authStore.hydrate();
-      logger.log('Re-hidrata user após refreshToken', authStore.user, authStore.token)
     }
   }
-  next();
+  next(); // Continua a navegação
 });
 
 export default router;

@@ -8,23 +8,26 @@
   >
     <v-img
       class="mx-auto my-8"
-      max-width="220"
-      src="@/assets/imgs/login-top-logo.svg"
+      max-width="300"
+      :class="settingsStore.isDark ? 'white-svg' : ''"
+      :src="spaceStore.getLoginLogoUrl()"
+      alt="Logo do topo"
     />
 
-    <div class="text-subtitle-1 text-medium-emphasis mb-3">
+    <div class="text-subtitle-1 mb-3 font-weight-medium">
       Insira seu CPF para receber uma nova senha por e-mail.
     </div>
 
     <v-text-field
+      required
       v-model="userCPF"
       :counter="11"
       :class="userCPF.length == 11 ? 'text-success' : ''"
       maxlength="11"
       prepend-inner-icon="mdi-account-outline"
       placeholder="CPF"
-      required
       color="secondary"
+      aria-label="Campo para inserir CPF"
     />
 
     <v-btn
@@ -65,40 +68,46 @@
 
     <v-img
       class="mx-auto my-4 animate__animated animate__flipInX animate__delay-1s"
-      :class="systemStore.isDarkMode ? 'white-svg' : ''"
+      :class="settingsStore.isDark ? 'white-svg' : ''"
       max-width="250"
-      src="@/assets/imgs/login-footer-logo.svg"
+      :src="spaceStore.getFooterLogoUrl()"
     />
   </v-card>
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
-  import { useSystemStore } from '@/store/system'
-  import { useAuthStore } from '@/store/userAuth'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useSpaceStore } from '@/store/space'
+import { useAuthStore } from '@/store/auth'
+import { useSettingsStore } from '@/store/settings'
 
-  //Sons dos botões
-  import { useBeepSound } from '@/components/composables/useSounds'
+//Sons dos botões
+import { useBeepSound } from '@/utils/sounds'
+//Logger
+//import logger from '#logger'
 
-  //Inicia a store
-  const systemStore = useSystemStore()
-  const authStore = useAuthStore()
+//Inicialização
+const router = useRouter()
+const spaceStore = useSpaceStore()
+const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
 
-  const userCPF = ref('')
+const userCPF = ref('')
 
-  //Limpa informações do usuário persistentes
-  localStorage.removeItem('userInfos')
+//Limpa informações do usuário persistentes
+localStorage.removeItem('userInfos')
 
-  //Envia cpf quando o usuário esquece a senha
-  const resetPwd = () => {
-    authStore.useLogin(
-      // path / { user, password }
-      '/resetpassword',
-      { userCPF: userCPF.value },
-    )
-  }
+//Envia cpf quando o usuário esquece a senha
+const resetPwd = () => {
+  authStore.useLogin(
+    // path / { user, password }
+    '/resetpassword',
+    { userCPF: userCPF.value }
+  )
+}
 
-  onMounted(() => {
-    useBeepSound()
-  })
+onMounted(() => {
+  useBeepSound()
+})
 </script>

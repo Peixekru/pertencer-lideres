@@ -8,12 +8,13 @@
   >
     <v-img
       class="mx-auto my-8"
-      max-width="220"
-      src="@/assets/imgs/login-top-logo.svg"
+      max-width="300"
+      :class="settingsStore.isDark ? 'white-svg' : ''"
+      :src="spaceStore.getLoginLogoUrl()"
       alt="Logo do topo"
     />
 
-    <div class="text-subtitle-1 text-medium-emphasis">Login</div>
+    <div class="text-subtitle-1 font-weight-medium">Login (DRT)</div>
 
     <v-text-field
       required
@@ -27,7 +28,7 @@
       aria-label="Campo para inserir CPF"
     />
 
-    <div class="text-subtitle-1 text-medium-emphasis">Senha</div>
+    <div class="text-subtitle-1 font-weight-medium">Senha</div>
 
     <v-text-field
       required
@@ -78,58 +79,88 @@
 
     <v-img
       class="mx-auto my-4 animate__animated animate__flipInX animate__delay-1s"
-      :class="systemStore.isDarkMode ? 'white-svg' : ''"
+      :class="settingsStore.isDark ? 'white-svg' : ''"
       max-width="250"
-      src="@/assets/imgs/login-footer-logo.svg"
+      :src="spaceStore.getFooterLogoUrl()"
       alt="Logo do rodapé"
     />
   </v-card>
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { useAuthStore } from '@/store/auth'
-  import { useSystemStore } from '@/store/system'
-  //Sons dos botões
-  import { useBeepSound } from '@/components/composables/useSounds'
-  //Logger
-  import logger from '#logger'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useSpaceStore } from '@/store/space'
+import { useAuthStore } from '@/store/auth'
+import { useUserCoursesStore } from '@/store/userCourses'
+import { useSettingsStore } from '@/store/settings'
 
-  //Inicia a store
-  const router = useRouter()
-  const authStore = useAuthStore()
-  const systemStore = useSystemStore()
+import { useThemeSwitcher } from '@/composables/vuetifyDynamicColors'
 
-  //Exibe / esconde a senha
-  const isVisible = ref(false)
+//Sons dos botões
+import { useBeepSound } from '@/utils/sounds'
+//Logger
+import logger from '#logger'
 
-  //Armezena user e password
-  const password = ref('')
-  const username = ref('')
+//Inicialização
+const router = useRouter()
+const spaceStore = useSpaceStore()
+const authStore = useAuthStore()
+const userCoursesStore = useUserCoursesStore()
+const settingsStore = useSettingsStore()
 
-  const handleLogin = async () => {
-    logger.stInf('handleLogin:', `username: ${username.value}`, `password: ${password.value}`)
+const { applyTheme } = useThemeSwitcher()
 
-    if (!username.value || username.value.length !== 11 || !password.value) {
-      systemStore.globalMsg('Oops! Seu login precisa ter 11 caracteres', 'error')
-      // HIGHLIGHT: next line - mensagem de erro
-      //  alert('Oops! Seu login precisa ter 11 caracteres') // Exibe o alerta
-      return
-    }
+//Exibe / esconde a senha
+const isVisible = ref(false)
 
-    try {
-      // store / outh . login  -->  response { user:{ id , login } token: token }
-      await authStore.login(username.value, password.value)
-      // HIGHLIGHT: next line - mensagem de sucesso
-      // alert('Login realizado com sucesso!')
-      router.push('/home')
-    } catch (error) {
-      alert(error.message || 'Erro ao fazer login.')
-    }
+//Armezena user e password
+const password = ref('')
+const username = ref('')
+
+const handleLogin = async () => {
+  logger.stInf('handleLogin:', `username: ${username.value}`, `password: ${password.value}`)
+
+  if (!username.value || username.value.length !== 11 || !password.value) {
+    //systemStore.globalMsg('Oops! Seu login precisa ter 11 caracteres', 'error')
+    // HIGHLIGHT: next line - mensagem de erro
+    //  alert('Oops! Seu login precisa ter 11 caracteres') // Exibe o alerta
+    return
   }
 
-  onMounted(() => {
-    useBeepSound()
-  })
+  try {
+    // store / outh . login  -->  response { user:{ id , login } token: token }
+    await authStore.login(username.value, password.value)
+    // HIGHLIGHT: next line - mensagem de sucesso
+    // alert('Login realizado com sucesso!')
+    const userId = authStore.user?.id
+    if (userId) {
+      await userCoursesStore.fetchUserCourses(userId)
+
+      // Carrega as configurações do usuário/curso
+      await settingsStore.fetchSettings()
+
+      // Aplica o tema recebido da API, ou fallback se não existir
+      const themeKey = settingsStore.selectedThemeKey
+      const themeExists = settingsStore.themeByKey(themeKey)?.colors
+
+      if (themeExists) {
+        applyTheme(themeKey)
+        console.info(`Tema '${themeKey}' aplicado após login.`)
+      } else {
+        console.warn(`Tema '${themeKey}' não encontrado. Aplicando fallback 'light'.`)
+        applyTheme('light')
+      }
+
+      // Redireciona para o curso
+      router.push('/course')
+    }
+  } catch (error) {
+    alert(error.message || 'Erro ao fazer login.')
+  }
+}
+
+onMounted(() => {
+  useBeepSound()
+})
 </script>

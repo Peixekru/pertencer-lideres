@@ -1,4 +1,4 @@
-import pool from '../config/database.js';
+import pool from "../config/database.js";
 
 export const getUserCourseFromDB = async (userCourseId) => {
   const conn = await pool.getConnection();
@@ -32,7 +32,21 @@ export const getUserCourseFromDB = async (userCourseId) => {
     // 3. Busca lições para cada unidade
     for (const unit of units) {
       const [lessons] = await conn.query(
-        `SELECT id, unit_id, title, image_url, duration, content_url, rating, is_completed FROM lessons WHERE unit_id = ? ORDER BY order_index ASC`,
+        `SELECT 
+    id,
+    unit_id,
+    title,
+    image_url,
+    duration,
+    content_url,
+    rating,
+    is_completed,
+    content_type,
+    badge,
+    ai_review
+  FROM lessons
+  WHERE unit_id = ?
+  ORDER BY order_index ASC`,
         [unit.id]
       );
       unit.lessons = lessons;
@@ -45,10 +59,10 @@ export const getUserCourseFromDB = async (userCourseId) => {
     );
 
     // 5. Busca os badges associados ao user_course
-    const [badges] = await conn.query(
-      `SELECT id, config FROM user_course_badges WHERE user_course_id = ?`,
-      [userCourseId]
-    );
+    // const [badges] = await conn.query(
+    //   `SELECT id, config FROM user_course_badges WHERE user_course_id = ?`,
+    //   [userCourseId]
+    // );
 
     // 6. Busca os settings associados ao user_course
     const [settings] = await conn.query(
@@ -80,10 +94,17 @@ export const getUserCourseFromDB = async (userCourseId) => {
       [userCourseId]
     );
 
-
     // 9. Monta o objeto final
-    return { ...userCourse, units, widgets, badges, settings, accessibility, gallery, time_capsule, ai_chat };
-
+    return {
+      ...userCourse,
+      units,
+      widgets,
+      /*badges,*/ settings,
+      accessibility,
+      gallery,
+      time_capsule,
+      ai_chat,
+    };
   } finally {
     conn.release();
   }

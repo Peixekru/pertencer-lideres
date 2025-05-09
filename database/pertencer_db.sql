@@ -4,7 +4,7 @@
 -- https://tableplus.com/
 --
 -- Database: pertencer_db
--- Generation Time: 2025-04-21 12:24:49.1510
+-- Generation Time: 2025-04-28 16:15:12.8470
 -- -------------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */
@@ -242,7 +242,7 @@ CREATE TABLE `users` (
     `id` int NOT NULL AUTO_INCREMENT,
     `login` varchar(255) NOT NULL,
     `password` varchar(255) NOT NULL,
-    `refresh_token` text NOT NULL,
+    `refresh_token` text,
     `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_login` (`login`)
@@ -280,7 +280,7 @@ VALUES (
         'uploads/app/course/1/bg.png',
         1,
         '1',
-        NULL,
+        '2025-04-21 05:26:00',
         NULL
     );
 
@@ -1004,9 +1004,9 @@ INSERT INTO
 VALUES (
         1,
         1,
-        '{\"login_icon_url\": \"uploads/app/space/1/login_icon.svg\", \"login_logo_url\": \"uploads/app/space/1/login_logo.svg\", \"footer_logo_url\": \"uploads/app/space/1/footer_logo.svg\", \"login_background_color_1\": \"#E4E4E4\", \"login_background_color_2\": \"#E4E4E4\", \"login_background_image_url\": \"uploads/app/space/1/login_background_image.png\"}',
+        '{\"favicon_url\": \"uploads/app/space/1/favicon.ico\", \"login_icon_url\": \"uploads/app/space/1/login_icon.svg\", \"login_logo_url\": \"uploads/app/space/1/login_logo.svg\", \"footer_logo_url\": \"uploads/app/space/1/footer_logo.svg\", \"login_background_color_1\": \"#E4E4E4\", \"login_background_color_2\": \"#E4E4E4\", \"login_background_image_url\": \"uploads/app/space/1/login_background_image.png\"}',
         '2025-04-21 08:13:28',
-        '2025-04-21 09:02:04'
+        '2025-04-28 19:14:30'
     );
 
 INSERT INTO
@@ -1132,8 +1132,8 @@ VALUES (
         1,
         1,
         '{\"adhd\": \"0\", \"contrast\": \"0\", \"dyslexia\": \"0\", \"epilepsy\": \"0\", \"fontSize\": \"1\", \"lowVision\": \"0\", \"zoomLevel\": \"0\", \"colorTheme\": \"0\", \"lineHeight\": \"1\", \"readingFocus\": \"0\", \"readingGuide\": \"0\", \"textToSpeech\": \"0\", \"linkHighlight\": \"0\", \"animationBlock\": \"0\", \"colorBlindness\": \"0\", \"motorImpairments\": \"0\", \"cursorEnhancement\": \"0\", \"keyboardNavigation\": \"0\"}',
-        NULL,
-        1,
+        '2025-04-21 08:35:04',
+        0,
         NULL
     );
 
@@ -1215,7 +1215,7 @@ VALUES (
         1,
         '{\"colorThemes\": {\"dark\": {\"info\": \"#62C9CE\", \"accent\": \"#2B7080\", \"primary\": \"#5BC6E8\", \"surface\": \"#1b1b1e\", \"secondary\": \"#004F81\"}, \"light\": {\"info\": \"#62C9CE\", \"accent\": \"#2B7080\", \"primary\": \"#1B1F45\", \"surface\": \"#F4F4F4\", \"secondary\": \"#5BC6E8\"}, \"dark_mono\": {\"info\": \"#616161\", \"error\": \"#333333\", \"accent\": \"#3c3c3c\", \"primary\": \"#d1d1d1\", \"success\": \"#2f2f2f\", \"surface\": \"#212121\", \"warning\": \"#666666\", \"secondary\": \"#434343\", \"background\": \"#000000\"}, \"light_mono\": {\"info\": \"#9a9a9a\", \"error\": \"#333333\", \"accent\": \"#575757\", \"primary\": \"#2f2f2f\", \"success\": \"#2f2f2f\", \"surface\": \"#F4F4F4\", \"warning\": \"#666666\", \"secondary\": \"#a3a3a3\", \"background\": \"#bdbdbd\"}}, \"header_icons\": {\"exit_icon_url\": \"uploads/app/space/1/exit_icon.svg\", \"info_icon_url\": \"uploads/app/space/1/info_icon.svg\", \"access_icon_url\": \"uploads/app/space/1/access_icon.svg\"}, \"header_logo_url\": \"uploads/app/space/1/header_logo.svg\", \"header_image_url\": \"uploads/app/space/1/header_image.png\"}',
         NULL,
-        1,
+        0,
         NULL
     );
 
@@ -1308,7 +1308,7 @@ VALUES (
         'admin',
         '$2b$10$bxS4AFdUCfpYInwnh0xUZe9crfiCRodqkyOUtfXi0ZiWgPCiYavPy',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzQ1MjQyOTM3LCJleHAiOjE3NDU4NDc3Mzd9.tPixzTf7hvRUomQAGfO9Tc0vmQOgm4nJBCIjtlP-RSA',
-        NULL
+        '2025-04-21 04:43:50'
     );
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */

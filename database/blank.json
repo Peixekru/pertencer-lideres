@@ -1,0 +1,60 @@
+{
+  "colorThemes": {
+    "dark": {
+      "dark": true,
+      "colors": {
+        "info": "#62C9CE",
+        "accent": "#2B7080",
+        "primary": "#5BC6E8",
+        "surface": "#1b1b1e",
+        "secondary": "#004F81"
+      }
+    },
+    "light": {
+      "dark": false,
+      "colors": {
+        "info": "#62C9CE",
+        "accent": "#2B7080",
+        "primary": "#1B1F45",
+        "surface": "#F4F4F4",
+        "secondary": "#5BC6E8"
+      }
+    },
+    "dark_mono": {
+      "dark": true,
+      "colors": {
+        "info": "#616161",
+        "error": "#333333",
+        "accent": "#3c3c3c",
+        "primary": "#d1d1d1",
+        "success": "#2f2f2f",
+        "surface": "#212121",
+        "warning": "#666666",
+        "secondary": "#434343",
+        "background": "#000000"
+      }
+    },
+    "light_mono": {
+      "dark": false,
+      "colors": {
+        "info": "#9a9a9a",
+        "error": "#333333",
+        "accent": "#575757",
+        "primary": "#2f2f2f",
+        "success": "#2f2f2f",
+        "surface": "#F4F4F4",
+        "warning": "#666666",
+        "secondary": "#a3a3a3",
+        "background": "#bdbdbd"
+      }
+    }
+  },
+  "header_icons": {
+    "exit_icon_url": "uploads/app/space/1/exit_icon.svg",
+    "info_icon_url": "uploads/app/space/1/info_icon.svg",
+    "access_icon_url": "uploads/app/space/1/access_icon.svg"
+  },
+  "header_logo_url": "uploads/app/space/1/header_logo.svg",
+  "header_image_url": "uploads/app/space/1/header_image.png",
+  "selectedThemeKey": "dark"
+}

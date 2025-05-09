@@ -62,34 +62,34 @@
 </template>
 
 <script setup>
-  import { onMounted } from 'vue'
-  import { useCourseStore } from '@/store/course'
-  import { useAuthStore } from '@/store/auth'
-  import SwithTheme from '@/components/SwithTheme.vue'
-  import CardContent from '@/components/CardContent.vue'
-  import Logout from '@/components/Logout.vue'
-  import logger from '#logger'
+import { onMounted } from 'vue'
+import { useCourseStore } from '@/store/course'
+import { useAuthStore } from '@/store/auth'
+import SwithTheme from '@/components/SwithTheme.vue'
+import CardContent from '@/components/CardContent.vue'
+import Logout from '@/components/Logout.vue'
+import logger from '#logger'
 
-  const courseStore = useCourseStore()
-  const authStore = useAuthStore()
+const courseStore = useCourseStore()
+const authStore = useAuthStore()
 
-  onMounted(async () => {
-    logger.stInf('Infos de login:', authStore.user, authStore.token)
+onMounted(async () => {
+  logger.stInf('Infos de login:', authStore.user, authStore.token)
 
-    const userId = authStore.user?.id
-    if (userId) {
-      await courseStore.fetchUserCourses(userId)
-    }
-
+  const userId = authStore.user?.id
+  if (userId) {
     await courseStore.fetchUserCourses(userId)
+  }
 
-    logger.stInf('Lista de cursos:', courseStore.userCourses)
+  await courseStore.fetchUserCourses(userId)
 
-    if (courseStore.userCourses && courseStore.userCourses.length > 0) {
-      const firstUserCourse = courseStore.userCourses[0]
-      await courseStore.fetchUserCourseDetails(firstUserCourse.user_course_id)
+  logger.stInf('Lista de cursos:', courseStore.userCourses)
 
-      logger.stInf('Primeiro curso da lista:', courseStore.currentCourse)
-    }
-  })
+  if (courseStore.userCourses && courseStore.userCourses.length > 0) {
+    const firstUserCourse = courseStore.userCourses[0]
+    await courseStore.fetchUserCourseDetails(firstUserCourse.user_course_id)
+
+    logger.stInf('Primeiro curso da lista:', courseStore.currentCourse)
+  }
+})
 </script>

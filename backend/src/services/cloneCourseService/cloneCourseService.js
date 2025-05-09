@@ -6,18 +6,26 @@ import {
   cloneUserCourse,
   cloneGallery,
   cloneWidgets,
-  cloneBadges,
   cloneSettings,
   cloneAccessibility,
   cloneTimeCapsule,
-  cloneAiChat
-} from './index.js';
+  cloneAiChat,
+} from "./index.js";
 
 // Função principal que orquestra todo o processo de clonagem de um curso
-export const cloneCourseHierarchy = async (conn, templateCourseId, userId, spaceId) => {
+export const cloneCourseHierarchy = async (
+  conn,
+  templateCourseId,
+  userId,
+  spaceId
+) => {
   try {
     // PASSO 1: Clona os dados básicos do curso (título, subtítulo, versão)
-    const { newCourseId, templateCourse } = await cloneCourse(conn, templateCourseId, spaceId);
+    const { newCourseId, templateCourse } = await cloneCourse(
+      conn,
+      templateCourseId,
+      spaceId
+    );
 
     // PASSO 2: Clona as unidades
     const unitIdMap = await cloneUnits(conn, templateCourseId, newCourseId);
@@ -26,11 +34,16 @@ export const cloneCourseHierarchy = async (conn, templateCourseId, userId, space
     await cloneLessons(conn, unitIdMap);
 
     // PASSO 3: Cria o vínculo entre usuário e curso clonado
-    const newUserCourseId = await cloneUserCourse(conn, userId, newCourseId, templateCourse.version);
+    const newUserCourseId = await cloneUserCourse(
+      conn,
+      userId,
+      newCourseId,
+      templateCourse.version
+    );
 
     // PASSO 4: Verifica se existe um curso template para clonar componentes adicionais
     const [[templateUserCourse]] = await conn.query(
-      'SELECT id FROM user_courses WHERE course_id = ? ORDER BY id ASC LIMIT 1',
+      "SELECT id FROM user_courses WHERE course_id = ? ORDER BY id ASC LIMIT 1",
       [templateCourseId]
     );
     const sourceTemplateUserCourseId = templateUserCourse?.id;
@@ -38,13 +51,12 @@ export const cloneCourseHierarchy = async (conn, templateCourseId, userId, space
     // Se existir um template, clona todos os componentes extras em paralelo
     if (sourceTemplateUserCourseId) {
       await Promise.all([
-        cloneGallery(conn, sourceTemplateUserCourseId, newUserCourseId),        // Galeria de imagens
-        cloneWidgets(conn, sourceTemplateUserCourseId, newUserCourseId),        // Widgets
-        cloneBadges(conn, sourceTemplateUserCourseId, newUserCourseId),         // Badges
-        cloneSettings(conn, sourceTemplateUserCourseId, newUserCourseId),       // Configurações
-        cloneAccessibility(conn, sourceTemplateUserCourseId, newUserCourseId),  // Acessibilidade
-        cloneTimeCapsule(conn, sourceTemplateUserCourseId, newUserCourseId),    // Cápsula do tempo
-        cloneAiChat(conn, sourceTemplateUserCourseId, newUserCourseId)          // Chat com IA
+        cloneGallery(conn, sourceTemplateUserCourseId, newUserCourseId), // Galeria de imagens
+        cloneWidgets(conn, sourceTemplateUserCourseId, newUserCourseId), // Widgets
+        cloneSettings(conn, sourceTemplateUserCourseId, newUserCourseId), // Configurações
+        cloneAccessibility(conn, sourceTemplateUserCourseId, newUserCourseId), // Acessibilidade
+        cloneTimeCapsule(conn, sourceTemplateUserCourseId, newUserCourseId), // Cápsula do tempo
+        cloneAiChat(conn, sourceTemplateUserCourseId, newUserCourseId), // Chat com IA
       ]);
     }
 

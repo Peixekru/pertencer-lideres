@@ -1,63 +1,57 @@
-// src/store/courseStore.js
-import { defineStore } from 'pinia';
-import courseService from '@/services/courseService';
+import { defineStore } from 'pinia'
+import { useUserCoursesStore } from './userCourses'
+import api from '@/services/api'
 
-export const useCourseStore = defineStore('courseStore', {
+export const useCourseStore = defineStore('course', {
   state: () => ({
-    userCourses: [],
     currentCourse: null,
     loading: false,
     error: null,
   }),
 
+  persist: {
+    storage: localStorage,
+    paths: ['currentCourse'],
+  },
+
   actions: {
-    async fetchUserCourses(userId) {
-      this.startLoading();
+    async fetchUserCourse() {
+      this.startLoading()
       try {
-        const courses = await courseService.fetchUserCourses(userId);
-        this.userCourses = courses;
+        const userCoursesStore = useUserCoursesStore()
+        const userCourseId = userCoursesStore.firstCourse?.user_course_id
+
+        if (!userCourseId) {
+          throw new Error('Nenhum userCourseId encontrado.')
+        }
+
+        const response = await api.get(`/course/${userCourseId}`)
+        this.currentCourse = response.data
       } catch (error) {
-        this.handleError(error);
+        this.handleError(error)
       } finally {
-        this.stopLoading();
+        this.stopLoading()
       }
     },
 
-    async fetchUserCourseDetails(userCourseId) {
-      this.startLoading();
-      try {
-        const course = await courseService.fetchUserCourseDetails(userCourseId);
-        this.currentCourse = course;
-      } catch (error) {
-        this.handleError(error);
-      } finally {
-        this.stopLoading();
-      }
-    },
-
-    // Helpers para controle de loading e erros
     startLoading() {
-      this.loading = true;
-      this.error = null;
+      this.loading = true
+      this.error = null
     },
 
     stopLoading() {
-      this.loading = false;
+      this.loading = false
     },
 
     handleError(error) {
-      console.error('Erro capturado:', error);
-      this.error = this.formatError(error);
+      console.error('Erro ao carregar detalhes do curso:', error)
+      this.error = this.formatError(error)
     },
 
     formatError(error) {
-      if (error?.response?.data?.message) {
-        return error.response.data.message;
-      }
-      if (error?.message) {
-        return error.message;
-      }
-      return 'Erro desconhecido. Tente novamente.';
+      if (error?.response?.data?.message) return error.response.data.message
+      if (error?.message) return error.message
+      return 'Erro desconhecido. Tente novamente.'
     },
   },
-});
+})

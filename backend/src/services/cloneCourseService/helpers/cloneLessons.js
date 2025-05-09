@@ -15,7 +15,7 @@ export const cloneLessons = async (conn, unitIdMap) => {
         rating, 
         is_completed,
         content_type,
-        active_badge,
+        badge,
         ai_review
       FROM lessons 
       WHERE unit_id = ? ORDER BY order_index ASC, id ASC`,
@@ -36,21 +36,21 @@ export const cloneLessons = async (conn, unitIdMap) => {
           rating,
           is_completed,
           content_type,
-          active_badge,
+          badge,
           ai_review
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          newUnitId,                        // ID da nova unidade
-          lesson.title,                     // Título da lição
-          lesson.content_url,               // URL do conteúdo da lição
-          lesson.order_index,               // Índice de ordem da lição
-          lesson.image_url,                 // URL da imagem da lição
-          lesson.duration,                  // Duração da lição
-          lesson.rating,                    // Avaliação da lição
-          lesson.is_completed,              // Indica se a lição está concluída
-          lesson.content_type,              // Tipo de conteúdo da lição
-          lesson.active_badge,              // ID do badge ativo para a lição
-          JSON.stringify(lesson.ai_review)  // Dados de revisão da IA (JSON)
+          newUnitId, // ID da nova unidade
+          lesson.title, // Título da lição
+          lesson.content_url, // URL do conteúdo da lição
+          lesson.order_index, // Índice de ordem da lição
+          lesson.image_url, // URL da imagem da lição
+          lesson.duration, // Duração da lição
+          lesson.rating, // Avaliação da lição
+          lesson.is_completed, // Indica se a lição está concluída
+          lesson.content_type, // Tipo de conteúdo da lição
+          lesson.badge, // ID do badge ativo para a lição
+          JSON.stringify(lesson.ai_review), // Dados de revisão da IA (JSON)
         ]
       );
     }

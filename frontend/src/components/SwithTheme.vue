@@ -1,26 +1,36 @@
 <template>
-  <v-btn
-    @click="toggleTheme"
-    variant="outlined"
-    :prepend-icon="theme.global.name.value === 'dark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
-    class="mb-4"
-  >
-    `{{ theme.global.name.value }} mode`
-  </v-btn>
+  <v-container class="text-center">
+    <h2 class="mb-4">Escolher Tema</h2>
+
+    <v-btn
+      v-for="key in themeKeys"
+      :key="key"
+      class="ma-2"
+      :color="isSelected(key) ? 'primary' : 'secondary'"
+      variant="elevated"
+      @click="changeTheme(key)"
+    >
+      {{ key }}
+    </v-btn>
+  </v-container>
 </template>
 
+
 <script setup>
-  import { useSystemStore } from '@/store/system'
-  import { useTheme } from 'vuetify'
+import { computed } from 'vue'
+import { useSettingsStore } from '@/store/settings'
+import { useThemeSwitcher } from '@/composables/vuetifyDynamicColors'
 
-  const systemStore = useSystemStore()
-  const theme = useTheme()
+const settingsStore = useSettingsStore()
+const { applyTheme } = useThemeSwitcher()
 
-  function toggleTheme() {
-    // Atualiza o estado isDarkMode na store: true se o tema atual for 'light', false caso contrário
-    systemStore.isDarkMode = theme.global.name.value === 'light'
+const themeKeys = computed(() => settingsStore.themeKeys)
+const isSelected = (key) => settingsStore.selectedThemeKey === key
 
-    // Define o novo tema com base no valor de isDarkMode: 'dark' se true, 'light' se false
-    theme.global.name.value = systemStore.isDarkMode ? 'dark' : 'light'
+const changeTheme = async (key) => {
+  if (!isSelected(key)) {
+    //applyTheme(key) // aplica no frontend (Vuetify)
+    await settingsStore.updateSelectedThemeInDB(key) // envia pro backend
   }
+}
 </script>

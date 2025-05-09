@@ -23,7 +23,12 @@ a {
     filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(81deg) brightness(150%) contrast(102%) !important;
 }
 
-
 .grayscale-filter {
     filter: grayscale(100%);
+}
+
+
+.blur-10 {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Para Safari */
 }

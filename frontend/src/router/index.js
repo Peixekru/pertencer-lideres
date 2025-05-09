@@ -1,47 +1,63 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '@/store/auth';
-import logger from '#logger'
+// router/index.js
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
+//import logger from '#logger'
 
 // Define as rotas da aplicação
 const routes = [
   {
-    path: '/', // Rota raiz
+    path: '/',
     name: 'Login',
-    component: () => import('@/views/LoginView.vue') // Lazy loading do componente
+    component: () => import('@/views/LoginView.vue'),
   },
   {
-    path: '/Home', // Rota da página principal
+    path: '/Home',
     name: 'Home',
-    component: () => import('@/views/HomeView.vue'), // Lazy loading do componente
-    meta: { requiresAuth: true } // 🔒 Rota protegida (requer autenticação)
-  }
-];
+    component: () => import('@/views/HomeView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/course',
+    name: 'Course',
+    component: () => import('@/views/CourseView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/units',
+    name: 'Units',
+    component: () => import('@/views/UnitsView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/lessons/:unitId',
+    name: 'Lessons',
+    component: () => import('@/views/LessonsView.vue'),
+    meta: { requiresAuth: true },
+    props: true, // permite passar como prop
+  },
+]
 
-// Cria a instância do roteador Vue
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL), // Configura o modo de histórico
-  routes // Define as rotas
-});
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+})
 
-// 🔐 Middleware global de autenticação
-// Executado antes de cada navegação
+// Middleware global de autenticação
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore(); // Acessa o store de autenticação
+  const authStore = useAuthStore()
 
-  // Verifica se a rota requer autenticação
-  if (to.meta.requiresAuth) {
-    // Se não tem usuário logado ou token expirado, tenta renovar
-    if (!authStore.user) {
-      const refreshed = await authStore.refreshToken();
-      if (!refreshed) {
-        authStore.logout(); // Faz logout se não conseguir renovar
-        return next({ name: 'Login' });  // Redireciona para login
-      }
-      // Re-hidrata o usuário do storage após renovar o token
-      authStore.hydrate();
-    }
+  // Se não há usuário, mas há token salvo, tenta renovar
+  if (!authStore.user && authStore.token) {
+    await authStore.refreshToken()
   }
-  next(); // Continua a navegação
-});
 
-export default router;
+  // Se a rota exige autenticação e o usuário continua ausente
+  if (to.meta.requiresAuth && !authStore.user) {
+    await authStore.logout()
+    return next({ name: 'Login' })
+  }
+
+  next()
+})
+
+export default router

@@ -6,8 +6,8 @@ POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "login": "user_000001",
-  "password": "user_000001",
+  "login": "user_000002",
+  "password": "user_000002",
   "spaceId": 1,
   "role": "user"
 }
@@ -73,9 +73,53 @@ GET http://localhost:3000/api/users/3/courses
 Content-Type: application/json
 
 
-### Buscar curso completo do usuário
-GET http://localhost:3000/api/user-courses/2/course
+
+
+
+############################
+## INÍCIO DA API DE CURSOS
+############################
+
+### Buscar dados do curso (básico)
+GET http://localhost:3000/api/course/3
 Content-Type: application/json
+//Authorization: Bearer {{token}}
+
+### Buscar unidades do curso do usuário
+GET http://localhost:3000/api/units/3
+Content-Type: application/json
+//Authorization: Bearer {{token}}
+
+### Buscar unidades do curso do usuário
+GET http://localhost:3000/api/lessons/1
+Content-Type: application/json
+//Authorization: Bearer {{token}}
+
+### Buscar curso completo do usuário
+GET http://localhost:3000/api/user-courses/3/course
+Content-Type: application/json
+//Authorization: Bearer {{token}}
+
+### Buscar configurações de user_course_settings
+GET http://localhost:3000/api/settings/3
+Content-Type: application/json
+# Authorization: Bearer {{token}} 
+### Atualizar configurações de user_course_settings
+
+### Atualizar configurações (merge no config)
+PUT http://localhost:3000/api/settings/3
+Content-Type: application/json
+
+{
+  "selectedThemeKey": "dark_mono"
+}
+
+
+############################
+## FIM DA API DE CURSOS
+############################
+
+
 
 
 ### 🔹 Upload de imagem para a galeria do curso do usuário

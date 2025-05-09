@@ -1,21 +1,13 @@
 <template>
-  <!-- Navegação provisória -->
-  <router-link
-    class="mx-auto mt-6"
-    to="/home"
-  >
-    Go to Home
-  </router-link>
-
   <v-container
     fluid
-    class="fill-height"
-    :class="systemStore.isDarkMode ? 'login-gradiente-dark' : 'login-gradiente-light'"
+    class="fill-height position-relative"
+    :style="spaceStore.getBackgroundColorStyle()"
   >
     <v-container
       fluid
-      class="pa-0 bg-img-graf"
-      :class="systemStore.isDarkMode ? 'bg-img-graf-opacity-dark' : ''"
+      class="pa-0 bg-img"
+      :style="spaceStore.getBackgroundImageStyle()"
     />
 
     <v-responsive class="align-center fill-height">
@@ -29,37 +21,42 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted } from 'vue'
-  import { useTheme } from 'vuetify'
-  import { useSystemStore } from '../store/system'
-  import Login from '@/components/login/Login.vue'
-  import ForgotLogin from '@/components/login/ForgotLogin.vue'
+import { ref, computed, onMounted } from 'vue'
+import { useSpaceStore } from '@/store/space'
+import { setFavicon } from '@/utils/setFavicon'
 
-  const theme = useTheme()
-  const systemStore = useSystemStore()
-  const isForgotPass = ref(false)
+import Login from '@/components/login/Login.vue'
+import ForgotLogin from '@/components/login/ForgotLogin.vue'
 
-  // Definição dinâmica do componente ativo
-  const currentComponent = computed(() => (isForgotPass.value ? ForgotLogin : Login))
+const spaceStore = useSpaceStore()
+const isForgotPass = ref(false)
 
-  // Alterna entre tela de login e recuperação de senha
-  const handlePass = (arg) => (isForgotPass.value = arg)
+// Definição dinâmica do componente ativo
+const currentComponent = computed(() => (isForgotPass.value ? ForgotLogin : Login))
 
-  const handleMail = () => {
-    const subject = encodeURIComponent('Contato - Pertencer')
-    const body = encodeURIComponent('Olá, Einstein Pertencer!')
-    const email = 'ensinocorporativo@einstein.br'
+// Alterna entre tela de login e recuperação de senha
+const handlePass = (arg) => (isForgotPass.value = arg)
 
-    window.open(`mailto:${email}?subject=${subject}&body=${body}`)
-  }
+const handleMail = () => {
+  const subject = encodeURIComponent('Contato - Pertencer')
+  const body = encodeURIComponent('Olá, Einstein Pertencer!')
+  const email = 'ensinocorporativo@einstein.br'
 
-  onMounted(() => {
-    theme.global.name.value = systemStore.isDarkMode ? 'dark' : 'light'
-  })
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`)
+}
+
+onMounted(async () => {
+  await spaceStore.fetchSpace('pertencer_lideres')
+  setFavicon(spaceStore.getFaviconUrl())
+  document.title = spaceStore.getPageTitle()
+})
 </script>
 
 <style lang="scss" scoped>
-  .bg-img-graf-opacity-dark {
-    opacity: 0.3 !important;
-  }
+.bg-img {
+  inset: 0;
+  z-index: 0;
+  position: absolute;
+  background-repeat: no-repeat;
+}
 </style>

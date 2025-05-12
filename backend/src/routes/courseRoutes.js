@@ -3,6 +3,8 @@ import { getCourseByUserCourseIdController } from "../controllers/getCourseByUse
 import { getUnitsByUserCourseIdController } from "../controllers/getUnitsByUserCourseIdController.js";
 import { getLessonsByUnitIdController } from "../controllers/getLessonsByUnitIdController.js";
 import { getSettingsByUserCourseIdController } from "../controllers/getSettingsByUserCourseIdController.js";
+import { getProgressByUserCourseController } from "../controllers/getProgressByUserCourseController.js";
+import { completeLessonController } from "../controllers/completeLessonController.js";
 import { updateSettingsByUserCourseIdController } from "../controllers/putSettingsByUserCourseIdController.js";
 //import { authenticateToken } from "../middlewares/authMiddleware.js";
 
@@ -24,6 +26,14 @@ router.get(
 router.get(
   "/settings/:userCourseId",
   /*authenticateToken,*/ getSettingsByUserCourseIdController
+);
+router.get(
+  "/users/:userId/courses/:courseId/progress",
+  /*authenticateToken,*/ getProgressByUserCourseController
+);
+router.post(
+  "/lessons/:lessonId/complete",
+  /*authenticateToken,*/ completeLessonController
 );
 router.put(
   "/settings/:userCourseId",

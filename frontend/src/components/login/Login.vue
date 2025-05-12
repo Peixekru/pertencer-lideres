@@ -9,12 +9,12 @@
     <v-img
       class="mx-auto my-8"
       max-width="300"
-      :class="settingsStore.isDark ? 'white-svg' : ''"
+      :class="settingsStore.isDark && 'white-svg'"
       :src="spaceStore.getLoginLogoUrl()"
       alt="Logo do topo"
     />
 
-    <div class="text-subtitle-1 font-weight-medium">Login (DRT)</div>
+    <div class="text-subtitle-1 font-weight-medium">Login</div>
 
     <v-text-field
       required
@@ -78,9 +78,9 @@
     </v-btn>
 
     <v-img
-      class="mx-auto my-4 animate__animated animate__flipInX animate__delay-1s"
-      :class="settingsStore.isDark ? 'white-svg' : ''"
-      max-width="250"
+      class="mx-auto my-6 animate__animated animate__flipInX animate__delay-1s"
+      :class="settingsStore.isDark && 'white-svg'"
+      max-width="240"
       :src="spaceStore.getFooterLogoUrl()"
       alt="Logo do rodapé"
     />
@@ -95,7 +95,7 @@ import { useAuthStore } from '@/store/auth'
 import { useUserCoursesStore } from '@/store/userCourses'
 import { useSettingsStore } from '@/store/settings'
 
-import { useThemeSwitcher } from '@/composables/vuetifyDynamicColors'
+import { useThemeSwitcher } from '@/composables/useVuetifyDynamicColors'
 
 //Sons dos botões
 import { useBeepSound } from '@/utils/sounds'

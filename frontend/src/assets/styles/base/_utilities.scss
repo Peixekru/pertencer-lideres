@@ -1,0 +1,47 @@
+// Text Utilities
+.reset-text-transform {
+  text-transform: none !important;
+}
+
+.text-shadow-4 {
+  text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+// Link Styling
+a {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+}
+
+// SVG Filters
+.svg-filter {
+  &--dark-blue {
+    filter: invert(12%) sepia(44%) saturate(1002%) hue-rotate(197deg) brightness(94%) contrast(97%);
+  }
+  &--secondary {
+    filter: invert(56%) sepia(45%) saturate(3115%) hue-rotate(160deg) brightness(90%) contrast(101%);
+  }
+  &--secondary-mono {
+    filter: brightness(0) saturate(100%) invert(75%) sepia(10%) saturate(13%) hue-rotate(1deg) brightness(87%) contrast(85%);
+  }
+  &--white {
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(81deg) brightness(150%) contrast(102%) !important;
+  }
+  &--grayscale {
+    filter: grayscale(100%);
+  }
+}
+
+// Visual Effects
+.blur-10 {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Para Safari */
+}
+
+.inner-shadow-4 {
+  box-shadow: inset 0px 0px 4px 0px rgba(0, 0, 0, 0.2) !important;
+}
+
+.drop-shadow-4 {
+  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2) !important;
+}

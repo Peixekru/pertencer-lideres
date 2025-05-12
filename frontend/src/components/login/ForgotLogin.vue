@@ -9,7 +9,7 @@
     <v-img
       class="mx-auto my-8"
       max-width="300"
-      :class="settingsStore.isDark ? 'white-svg' : ''"
+      :class="settingsStore.isDark && 'svg-filter--white'"
       :src="spaceStore.getLoginLogoUrl()"
       alt="Logo do topo"
     />
@@ -68,7 +68,7 @@
 
     <v-img
       class="mx-auto my-4 animate__animated animate__flipInX animate__delay-1s"
-      :class="settingsStore.isDark ? 'white-svg' : ''"
+      :class="settingsStore.isDark && 'svg-filter--white'"
       max-width="250"
       :src="spaceStore.getFooterLogoUrl()"
     />

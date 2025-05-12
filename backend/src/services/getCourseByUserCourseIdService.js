@@ -7,8 +7,6 @@ export const getCourseByUserCourseId = async (userCourseId) => {
       `SELECT
         c.id,
         c.in_app_tutorial,
-        c.is_completed,
-        c.progress,
         c.title,
         c.subtitle,
         c.background_color_1,

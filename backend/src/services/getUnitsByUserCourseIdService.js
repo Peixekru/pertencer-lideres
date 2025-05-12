@@ -15,8 +15,6 @@ export const getUnitsByUserCourseId = async (userCourseId) => {
         ai_review,
         title,
         image_url,
-        progress,
-        is_completed,
         order_index
       FROM units
       WHERE course_id = ?

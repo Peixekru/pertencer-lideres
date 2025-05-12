@@ -1,0 +1,12 @@
+CREATE TABLE user_lesson_progress (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  lesson_id INT NOT NULL,
+  is_completed TINYINT(1) DEFAULT 0,
+  completed_at TIMESTAMP NULL DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY (user_id, lesson_id),
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (lesson_id) REFERENCES lessons(id)
+);

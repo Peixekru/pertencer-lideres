@@ -1,72 +1,88 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import router from '@/router'
-import authService from '@/services/authService'
-//import logger from '#logger';
+import { useAuth } from '@/composables/useAuth'
 
-export const useAuthStore = defineStore('auth', {
-  // Estado inicial
-  state: () => ({ user: null, token: null, refreshInterval: null }),
-  // Persistência do estado
-  persist: {
-    storage: localStorage,
-    pick: ['user', 'token'],
-  },
-  // Getters
-  actions: {
-    async login(login, password) {
-      const { user, token } = await authService.login(login, password)
-      this.user = user
-      this.token = token
-      this.startTokenRefreshInterval()
-      //logger.stInf('Usuário logado:', user, token);
-    },
+// Define a store de autenticação com Composition API
+export const useAuthStore = defineStore(
+  'auth',
+  () => {
+    // Estado reativo: armazena dados do usuário, token e intervalo de refresh
+    const user = ref(null)
+    const token = ref(null)
+    const refreshInterval = ref(null)
 
-    async logout() {
-      await authService.logout()
-      this.clearSession()
+    // Importa os métodos de autenticação real da camada de serviço (login, logout, refresh)
+    const { login: doLogin, logout: doLogout, refreshToken: doRefresh } = useAuth()
+
+    // Realiza login, atualiza o estado da store e inicia o intervalo de refresh
+    async function login(login, password) {
+      const result = await doLogin(login, password)
+      user.value = result.user
+      token.value = result.token
+      startTokenRefreshInterval()
+    }
+    // Realiza logout, limpa sessão e redireciona para página inicial
+    async function logout() {
+      await doLogout()
+      clearSession()
       router.push('/')
-    },
-
-    clearSession() {
-      this.user = null
-      this.token = null
-      localStorage.clear()
-      this.stopTokenRefreshInterval()
-    },
-
-    startTokenRefreshInterval() {
-      this.stopTokenRefreshInterval() // previne duplicidade
-      this.refreshInterval = setInterval(
-        async () => {
-          const success = await this.refreshToken()
-          if (!success) {
-            await this.logout()
-          }
-        },
-        50 * 60 * 1000,
-      ) // 50 minutos
-    },
-
-    stopTokenRefreshInterval() {
-      if (this.refreshInterval) {
-        clearInterval(this.refreshInterval)
-        this.refreshInterval = null
-      }
-    },
-
-    async refreshToken() {
-      // Tenta renovar o token chamando o serviço de autenticação
-      // Se falhar, captura o erro e retorna um objeto vazio ({})
-      const { token, user } = await authService.refreshToken().catch(() => ({}))
-      // Se obteve token, atualiza o usuário e token na store
-      if (token) {
-        this.user = user
-        this.token = token
+    }
+    // Tenta renovar o token; se falhar, faz logout
+    async function refreshToken() {
+      const { token: newToken, user: newUser } = await doRefresh().catch(() => ({}))
+      if (newToken) {
+        user.value = newUser
+        token.value = newToken
         return true
       }
-      // Se não houver token, faz logout e retorna false
-      await this.logout()
+      await logout()
       return false
+    }
+    // Limpa sessão local (estado + localStorage + timer)
+    function clearSession() {
+      user.value = null
+      token.value = null
+      localStorage.clear()
+      stopTokenRefreshInterval()
+    }
+    // Inicia um intervalo de 50 minutos para tentar renovar o token
+    function startTokenRefreshInterval() {
+      stopTokenRefreshInterval() // previne duplicidade
+      refreshInterval.value = setInterval(
+        async () => {
+          const success = await refreshToken()
+          if (!success) {
+            await logout()
+          }
+        },
+        50 * 60 * 1000, // 50 minutos
+      )
+    }
+    // Para o intervalo de renovação, se existir
+    function stopTokenRefreshInterval() {
+      if (refreshInterval.value) {
+        clearInterval(refreshInterval.value)
+        refreshInterval.value = null
+      }
+    }
+    // Exporta os dados e métodos disponíveis da store
+    return {
+      user,
+      token,
+      login,
+      logout,
+      refreshToken,
+      clearSession,
+      startTokenRefreshInterval,
+      stopTokenRefreshInterval,
+    }
+  },
+  {
+    // Define persistência local para os campos `user` e `token`
+    persist: {
+      storage: localStorage,
+      paths: ['user', 'token'],
     },
   },
-})
+)

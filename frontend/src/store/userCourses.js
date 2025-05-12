@@ -1,53 +1,65 @@
 import { defineStore } from 'pinia'
-import api from '@/services/api'
+import { ref } from 'vue'
+import api from '@/composables/useApi' // Atualize para novo caminho, se necessário
 
-export const useUserCoursesStore = defineStore('userCourses', {
-  state: () => ({
-    userCourses: [],
-    firstCourse: null,
-    loading: false,
-    error: null,
-  }),
+export const useUserCoursesStore = defineStore(
+  'userCourses',
+  () => {
+    // Estado reativo
+    const userCourses = ref([])
+    const firstCourse = ref(null)
+    const loading = ref(false)
+    const error = ref(null)
 
-  persist: {
-    storage: localStorage,
-    paths: ['userCourses', 'firstCourse'],
-  },
-
-  actions: {
-    async fetchUserCourses(userId) {
-      this.startLoading()
+    // Requisição para buscar os cursos do usuário
+    async function fetchUserCourses(userId) {
+      startLoading()
       try {
         const response = await api.get(`/users/${userId}/courses`)
-        // Seleciona a lista de cursos do usuário
-        this.userCourses = response.data
-        //Seleciona o primeiro curso da lista de cursos do usuário
-        this.firstCourse = this.userCourses[0]
-      } catch (error) {
-        this.handleError(error)
+        // Atualiza o estado com os cursos do usuário
+        userCourses.value = response.data
+        // Atualiza o primeiro curso
+        firstCourse.value = userCourses.value[0] || null
+      } catch (err) {
+        handleError(err)
       } finally {
-        this.stopLoading()
+        stopLoading()
       }
-    },
-
-    startLoading() {
-      this.loading = true
-      this.error = null
-    },
-
-    stopLoading() {
-      this.loading = false
-    },
-
-    handleError(error) {
+    }
+    // Inicia estado de carregamento
+    function startLoading() {
+      loading.value = true
+      error.value = null
+    }
+    // Finaliza estado de carregamento
+    function stopLoading() {
+      loading.value = false
+    }
+    // Trata e formata erros da requisição
+    function handleError(error) {
       console.error('Erro ao buscar cursos do usuário:', error)
-      this.error = this.formatError(error)
-    },
-
-    formatError(error) {
+      error.value = formatError(error)
+    }
+    // Formata mensagem de erro
+    function formatError(error) {
       if (error?.response?.data?.message) return error.response.data.message
       if (error?.message) return error.message
       return 'Erro desconhecido. Tente novamente.'
+    }
+    // Exporta funções e estado
+    return {
+      userCourses,
+      firstCourse,
+      loading,
+      error,
+      fetchUserCourses,
+    }
+  },
+  {
+    // Persistência no localStorage
+    persist: {
+      storage: localStorage,
+      paths: ['userCourses', 'firstCourse'],
     },
   },
-})
+)

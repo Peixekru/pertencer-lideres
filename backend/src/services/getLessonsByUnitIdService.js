@@ -13,7 +13,6 @@ export const getLessonsByUnitId = async (unitId) => {
         duration,
         content_url,
         rating,
-        is_completed,
         content_type,
         badge,
         ai_review,

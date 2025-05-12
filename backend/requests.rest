@@ -6,8 +6,8 @@ POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
-  "login": "user_000002",
-  "password": "user_000002",
+  "login": "user_000001",
+  "password": "user_000001",
   "spaceId": 1,
   "role": "user"
 }
@@ -81,12 +81,12 @@ Content-Type: application/json
 ############################
 
 ### Buscar dados do curso (básico)
-GET http://localhost:3000/api/course/3
+GET http://localhost:3000/api/course/2
 Content-Type: application/json
 //Authorization: Bearer {{token}}
 
 ### Buscar unidades do curso do usuário
-GET http://localhost:3000/api/units/3
+GET http://localhost:3000/api/units/2
 Content-Type: application/json
 //Authorization: Bearer {{token}}
 
@@ -96,18 +96,30 @@ Content-Type: application/json
 //Authorization: Bearer {{token}}
 
 ### Buscar curso completo do usuário
-GET http://localhost:3000/api/user-courses/3/course
+GET http://localhost:3000/api/user-courses/2/course
 Content-Type: application/json
 //Authorization: Bearer {{token}}
 
 ### Buscar configurações de user_course_settings
-GET http://localhost:3000/api/settings/3
+GET http://localhost:3000/api/settings/2
 Content-Type: application/json
 # Authorization: Bearer {{token}} 
-### Atualizar configurações de user_course_settings
 
-### Atualizar configurações (merge no config)
-PUT http://localhost:3000/api/settings/3
+### Ver progresso do curso
+GET http://localhost:3000/api/users/2/courses/2/progress
+Content-Type: application/json
+
+
+### Marcar lição como concluída
+POST http://localhost:3000/api/lessons/43/complete
+Content-Type: application/json
+
+{
+  "userId": 2
+}
+
+### Atualizar configurações de user_course_settings (merge no config)
+PUT http://localhost:3000/api/settings/2
 Content-Type: application/json
 
 {

@@ -19,7 +19,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useSettingsStore } from '@/store/settings'
-import { useThemeSwitcher } from '@/composables/vuetifyDynamicColors'
+import { useThemeSwitcher } from '@/composables/useVuetifyDynamicColors'
 
 const settingsStore = useSettingsStore()
 const { applyTheme } = useThemeSwitcher()

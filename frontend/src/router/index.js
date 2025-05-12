@@ -9,12 +9,7 @@ const routes = [
     path: '/',
     name: 'Login',
     component: () => import('@/views/LoginView.vue'),
-  },
-  {
-    path: '/Home',
-    name: 'Home',
-    component: () => import('@/views/HomeView.vue'),
-    meta: { requiresAuth: true },
+    meta: { noLayout: true }, // indica que não usa o layout padrão
   },
   {
     path: '/course',
@@ -23,17 +18,18 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/units',
-    name: 'Units',
-    component: () => import('@/views/UnitsView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
     path: '/lessons/:unitId',
     name: 'Lessons',
     component: () => import('@/views/LessonsView.vue'),
     meta: { requiresAuth: true },
-    props: true, // permite passar como prop
+    props: true, // Permite que o ID da unidade seja passado como propriedade
+  },
+  {
+    path: '/lesson/:lessonId',
+    name: 'Lesson',
+    component: () => import('@/views/LessonView.vue'),
+    meta: { requiresAuth: true },
+    props: true, // Permite que o ID da lição seja passado como propriedade
   },
 ]
 

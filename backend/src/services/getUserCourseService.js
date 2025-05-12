@@ -25,7 +25,7 @@ export const getUserCourseFromDB = async (userCourseId) => {
 
     // 2. Busca unidades
     const [units] = await conn.query(
-      `SELECT id, course_id, title, image_url, progress FROM units WHERE course_id = ? ORDER BY order_index ASC`,
+      `SELECT id, course_id, title, image_url FROM units WHERE course_id = ? ORDER BY order_index ASC`,
       [userCourse.course_id]
     );
 
@@ -40,7 +40,6 @@ export const getUserCourseFromDB = async (userCourseId) => {
     duration,
     content_url,
     rating,
-    is_completed,
     content_type,
     badge,
     ai_review

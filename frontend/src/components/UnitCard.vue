@@ -2,25 +2,24 @@
   <v-card
     class="rounded-lg px-4"
     :class="{
-      'opacity-50': unit.status === 0,
+      'opacity-50': isLocked,
       'highlight-card': isHighlighted,
     }"
     elevation="10"
   >
     <v-card-text class="px-0">
       <div class="d-flex justify-start align-center">
-        <h2 class="text-h2 font-weight-bold text-info mr-4">0{{ index + 1 }}</h2>
+        <h2 class="text-shadow-4 text-h2 font-weight-bold text-info mr-4">0{{ index + 1 }}</h2>
         <p class="text-subtitle-1">{{ unit.title }}</p>
       </div>
     </v-card-text>
 
     <v-img
       class="rounded elevation-2"
-      :class="unit.status === 0 ? 'grayscale-filter' : ''"
       aspect-ratio="16/9"
       cover
-      :src="unit.image || placeholder"
-      :lazy-src="placeholder"
+      :src="unit.image"
+      :lazy-src="unit.image"
     >
       <template #placeholder>
         <v-row
@@ -39,9 +38,10 @@
     <div class="py-4">
       <v-progress-linear
         :model-value="unit.progress"
+        rounded
         color="info"
         height="10"
-        rounded
+        class="inner-shadow-4"
       />
     </div>
 
@@ -51,31 +51,39 @@
         size="small"
         color="primary"
         elevation="0"
-        :disabled="unit.status === 0"
-        @click="$emit('select', unit)"
+        :disabled="isLocked"
+        @click="goToUnit"
       >
         Acessar Unidade
       </v-btn>
-      <p class="text-caption">{{ unit.progress }} de {{ unit.total }}</p>
+      <p class="text-caption">{{ unit.completed }} de {{ unit.total }}</p>
     </div>
   </v-card>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
+
+// Propriedades recebidas
 const props = defineProps({
   unit: Object,
   index: Number,
+  isLocked: Boolean,
   isHighlighted: Boolean,
 })
 
-const placeholder = 'https://placehold.co/320x180?text=Unidade'
-</script>
+// Inicializa router
+const router = useRouter()
 
-<style scoped>
-.grayscale-filter {
-  filter: grayscale(1);
+const goToUnit = () => {
+  router.push({ name: 'Lessons', params: { unitId: props.unit.id } })
 }
 
+//const placeholder = 'https://placehold.co/320x180?text=Unidade'
+</script>
+
+
+<style scoped>
 .highlight-card {
   border: 4px solid #4fc3f7;
   transform: scale(1.03);

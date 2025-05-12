@@ -3,93 +3,10 @@
     fluid
     class="fill-height pa-0 d-flex flex-column"
   >
-    <!-- Header fixo -->
-    <v-app-bar
-      app
-      :elevation="showBackground ? 2 : 0"
-      :color="showBackground ? 'rgba(255,255,255,0.7)' : 'transparent'"
-      :class="showBackground ? 'blur-10' : ''"
-    >
-      <!-- Barra de progresso no topo -->
-      <v-container
-        fluid
-        class="position-relative w-100"
-      >
-        <!-- Barra de progresso absoluta dentro do espaço reservado -->
-        <v-progress-linear
-          :model-value="progress"
-          height="8"
-          color="primary"
-          class="w-100 position-fixed top-0 left-0 z-index-1"
-        />
-
-        <!-- Conteúdo da app-bar -->
-        <v-row
-          align="center"
-          justify="space-between"
-          class="w-100 pb-2 pt-4 mx-auto"
-        >
-          <!-- Logo -->
-          <div style="width: 120px">
-            <v-img
-              src="https://placehold.co/120x40?text=Logo"
-              max-height="40"
-              width="120"
-              contain
-            />
-          </div>
-
-          <!-- Botões centrais -->
-          <div class="d-flex justify-center flex-grow-1">
-            <v-btn
-              icon
-              color="primary"
-              class="mx-1"
-            >
-              <v-icon>mdi-book</v-icon>
-            </v-btn>
-            <v-btn
-              color="primary"
-              icon
-              class="mx-1"
-            >
-              <v-icon>mdi-calendar</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              color="primary"
-              class="mx-1"
-            >
-              <v-icon>mdi-bell</v-icon>
-            </v-btn>
-          </div>
-
-          <!-- Botão à direita -->
-          <div>
-            <v-btn
-              rounded
-              size="small"
-              variant="elevated"
-              color="primary"
-              elevation="0"
-            >
-              Rever Introdução
-            </v-btn>
-          </div>
-        </v-row>
-      </v-container>
-    </v-app-bar>
-
-    <!-- Sentinela logo após a app-bar -->
-    <div
-      ref="sentinela"
-      style="height: 1px"
-    />
-
     <!-- descrição -->
     <v-container
       fluid
-      class="pt-16 mt-16"
+      class="pt-16"
     >
       <v-row
         justify="start"
@@ -102,16 +19,16 @@
           <!-- Logo -->
 
           <v-img
-            src="https://placehold.co/300x100?text=Logo"
+            :src="headerImageUrl"
+            :class="settingsStore.isDark && 'svg-filter--white'"
             max-height="100"
             width="300"
             contain
           />
 
           <!-- Título -->
-          <h5 class="text-h5 text-uppercase text-disabled mt-4">
-            Programa de integração dos novos líderes.
-          </h5>
+          <h5 class="text-h5 text-primary text-uppercase text-disabled mt-4">{{ courseTitle }}</h5>
+          <p class="text-primary">{{ courseSubtitle }}</p>
         </v-sheet>
       </v-row>
     </v-container>
@@ -138,6 +55,7 @@
           <UnitCard
             :unit="unit"
             :index="index"
+            :is-locked="unit.isLocked"
           />
         </v-col>
       </v-row>
@@ -174,9 +92,11 @@
     <!-- Footer com logo -->
     <v-container class="text-center mt-auto mb-4">
       <v-img
-        src="https://placehold.co/120x40?text=Logo_Footer"
-        max-height="40"
+        :src="footerLogoUrl"
+        :class="settingsStore.isDark && 'svg-filter--white'"
+        max-height="64"
         contain
+        alt="Logo do rodapé"
       />
     </v-container>
 
@@ -191,8 +111,8 @@
         v-for="(badge, i) in badges"
         :key="i"
         icon
-        color="rgba(0,0,0,.2)"
-        style="box-shadow: inset 0px 0px 4px 0px rgba(0, 0, 0, 0.4)"
+        color="rgba(0,0,0,.1)"
+        class="inner-shadow-4"
         :class="{ 'mb-2': i < badges.length - 1 }"
       >
         <v-icon color="white">{{ badge.icon }}</v-icon>
@@ -202,38 +122,70 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+// Pinia
+import { storeToRefs } from 'pinia'
+// Stores
+import { useSpaceStore } from '@/store/space'
+import { useSettingsStore } from '@/store/settings'
+import { useCourseStore } from '@/store/course'
+import { useUnitStore } from '@/store/unit'
+import { useProgressStore } from '@/store/progress'
+import { mapUnitsWithLockState } from '@/domain/progress/mapUnitsWithLockState'
+
+// Componentes
 import UnitCard from '@/components/UnitCard.vue'
+// Sons dos botões
+import { useBeepSound } from '@/utils/sounds'
+//Logger
+import logger from '#logger'
 
-const unidades = ref([
-  { title: 'Unidade 1', progress: 10, total: 10 },
-  { title: 'Unidade 2', progress: 30, total: 10 },
-  { title: 'Unidade 3', progress: 0, total: 10 },
-  { title: 'Unidade 4', progress: 0, total: 10 },
-  { title: 'Unidade 1', progress: 100, total: 10 },
-  { title: 'Unidade 2', progress: 30, total: 10 },
-  { title: 'Unidade 3', progress: 0, total: 10 },
-  { title: 'Unidade 4', progress: 0, total: 10 },
-])
+// inicialização dos stores
+const spaceStore = useSpaceStore()
+const settingsStore = useSettingsStore()
+const courseStore = useCourseStore()
+const unitStore = useUnitStore()
+const progressStore = useProgressStore()
 
-const progress = ref(16)
+// Sons dos botões
+useBeepSound()
 
+// importação da imagem do branding via store getter
+const { headerImageUrl } = storeToRefs(settingsStore)
+const footerLogoUrl = spaceStore.getFooterLogoUrl()
+
+// Variáveis reativas
+const courseTitle = ref('')
+const courseSubtitle = ref('')
+
+//
+const unidades = computed(() =>
+  mapUnitsWithLockState(progressStore.unitsWithProgress, unitStore.getUnitById)
+)
+
+// inicialização
+onMounted(async () => {
+  // Carrega os dados do curso e das unidades
+  await Promise.all([courseStore.fetchUserCourse(), unitStore.fetchUnits()])
+  // Carrega id do curso atual
+  const courseId = courseStore.currentCourse?.id
+  // Carrega o progresso do curso atual
+  courseId && (await progressStore.fetchCourseProgress(courseId))
+  // Atualiza o título do curso
+  courseTitle.value = courseStore.currentCourse?.title
+  // Atualiza o subtítulo do curso
+  courseSubtitle.value = courseStore.currentCourse?.subtitle
+
+  logger.stInf('Retorno de unidades', unidades.value)
+})
+
+// mock de badges
 const badges = ref([
   { icon: 'mdi-account' },
   { icon: 'mdi-information' },
   { icon: 'mdi-lock' },
   { icon: 'mdi-water-percent' },
 ])
-
-const showBackground = ref(false)
-
-const handleScroll = () => {
-  showBackground.value = window.scrollY > 60
-}
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
-})
 </script>
 
 <style scoped>
@@ -244,44 +196,3 @@ onMounted(() => {
   z-index: 1000;
 }
 </style>
-
-
-<!--<template>
-  <v-container>
-    <router-link
-      class="mx-auto mt-6"
-      to="/units"
-    >
-      go to Units
-    </router-link>
-    <h1>Curso</h1>
-
-    <v-btn @click="authStore.logout">logout</v-btn>
-
-    <SwithTheme />
-
-    <div v-if="courseStore.loading">Carregando...</div>
-    <div v-else-if="courseStore.error">Erro: {{ courseStore.error }}</div>
-    <div v-else>
-      <pre>{{ courseStore.currentCourse }}</pre>
-    </div>
-  </v-container>
-</template>-->
-
-<!--<script setup>
-import { onMounted } from 'vue'
-import { useCourseStore } from '@/store/course'
-import SwithTheme from '../components/SwithTheme.vue'
-import { useAuthStore } from '../store/auth'
-
-//Sons dos botões
-import { useBeepSound } from '@/utils/sounds'
-
-const authStore = useAuthStore()
-const courseStore = useCourseStore()
-
-onMounted(() => {
-  courseStore.fetchUserCourse()
-  useBeepSound()
-})
-</script>-->

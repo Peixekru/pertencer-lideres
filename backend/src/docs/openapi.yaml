@@ -1,0 +1,507 @@
+openapi: 3.0.0
+info:
+  title: API Pertencer Líderes
+  version: beta
+  description: Documentação da API RESTful da plataforma Pertencer Líderes
+
+servers:
+  - url: http://localhost:3000/api
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    #   Autenticação:
+    AuthRequest:
+      type: object
+      description: Requisição para autenticação de um usuário. Retorna tokens de acesso.
+      properties:
+        login:
+          type: string
+          description: Nome de login do usuário
+          example: user_000001
+        password:
+          type: string
+          description: Senha do usuário
+          example: user_000001
+      required:
+        - login
+        - password
+
+    TokenResponse:
+      type: object
+      description: Resposta de autenticação contendo o token JWT e o refresh token.
+      properties:
+        token:
+          type: string
+          description: Token JWT válido por 5 minutos
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          description: Token de atualização válido por 7 dias
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    RefreshTokenRequest:
+      type: object
+      description: Requisição para gerar um novo token de acesso a partir de um refresh token válido.
+      properties:
+        refreshToken:
+          type: string
+          description: Token de atualização emitido durante o login
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      required:
+        - refreshToken
+
+    #   Usuários:
+    User:
+      type: object
+      description: Representa um usuário do sistema
+      properties:
+        id:
+          type: integer
+          description: ID único do usuário
+        login:
+          type: string
+          description: Nome de login do usuário
+        spaceId:
+          type: integer
+          description: ID do espaço ao qual o usuário pertence
+        role:
+          type: string
+          enum: [admin, manager, support, user]
+          description: Papel do usuário no sistema
+      required:
+        - login
+        - spaceId
+        - role
+      example:
+        id: 2
+        login: maria
+        spaceId: 1
+        role: manager
+
+    BulkUserUpload:
+      type: object
+      properties:
+        csvFile:
+          type: string
+          format: binary
+          description: |
+            Arquivo CSV contendo os dados dos usuários a serem criados.
+            O arquivo deve conter as seguintes colunas: login, password, spaceId, role
+
+            Exemplo:
+            ```
+            login,password,spaceId,role
+            user001,senha001,1,user
+            user002,senha002,1,support
+            user003,senha003,1,manager
+            ```
+
+    CreateUserRequest:
+      type: object
+      description: Estrutura de dados para criação ou atualização de um usuário
+      properties:
+        login:
+          type: string
+          description: Nome de login do usuário
+        password:
+          type: string
+          description: Senha do usuário
+        spaceId:
+          type: integer
+          description: ID do espaço do usuário
+        role:
+          type: string
+          enum: [admin, manager, support, user]
+          description: Papel do usuário no sistema
+      required:
+        - login
+        - password
+        - spaceId
+        - role
+      example:
+        login: jose
+        password: jose123
+        spaceId: 1
+        role: user
+
+    UserCourseSettings:
+      type: object
+      description: Configurações personalizadas de curso para um usuário
+      properties:
+        selectedThemeKey:
+          type: string
+          description: Tema visual selecionado pelo usuário. Light é o default se não for especificado.
+          enum: [light, dark, light_mono, dark_mono]
+      example:
+        selectedThemeKey: dark_mono
+
+    #  Cursos:
+    UserCourseSettings:
+      type: object
+      properties:
+        selectedThemeKey:
+          type: string
+
+    #   Unidades e Lições:
+    Unit:
+      type: object
+      description: Representa uma unidade de um curso
+      properties:
+        id:
+          type: integer
+        courseId:
+          type: integer
+        title:
+          type: string
+        order:
+          type: integer
+      example:
+        id: 1
+        courseId: 2
+        title: Introdução
+        order: 1
+
+    Lesson:
+      type: object
+      description: Representa uma lição dentro de uma unidade
+      properties:
+        id:
+          type: integer
+        unitId:
+          type: integer
+        title:
+          type: string
+        order:
+          type: integer
+        content:
+          type: string
+      example:
+        id: 1
+        unitId: 1
+        title: Conceitos Básicos
+        order: 1
+        content: "Bem-vindo à primeira lição"
+
+    # Plugins:
+    GalleryImageUpload:
+      type: object
+      description: Payload para envio de imagem à galeria do curso do usuário
+      properties:
+        image:
+          type: string
+          format: binary
+          description: Arquivo de imagem PNG ou JPG
+
+paths:
+  #   Autenticação:
+  /login:
+    post:
+      tags:
+        - Autenticação
+      summary: Realiza login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        200:
+          description: Tokens de acesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+
+  /refresh-token:
+    post:
+      tags:
+        - Autenticação
+      summary: Gera novo token a partir do refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        200:
+          description: Novo token JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+
+  /logout:
+    post:
+      tags:
+        - Autenticação
+      summary: Faz logout do usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        200:
+          description: Logout realizado com sucesso
+
+  /status:
+    get:
+      tags:
+        - Autenticação
+      summary: Verifica se o token é válido
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Token válido
+
+  #   Usuários:
+  /users:
+    get:
+      tags:
+        - Usuários
+      summary: Buscar todos os usuários
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lista de usuários
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+    post:
+      tags:
+        - Usuários
+      summary: Criar um novo usuário
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        201:
+          description: Usuário criado com sucesso
+
+  /users/{id}:
+    get:
+      tags:
+        - Usuários
+      summary: Buscar usuário por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    put:
+      tags:
+        - Usuários
+      summary: Atualizar usuário
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        200:
+          description: Usuário atualizado com sucesso
+
+    delete:
+      tags:
+        - Usuários
+      summary: Deletar usuário
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Usuário deletado com sucesso
+
+  /users/{id}/courses:
+    get:
+      tags:
+        - Cursos
+      summary: Consultar cursos do usuário
+      responses:
+        200:
+          description: Lista de cursos atribuídos ao usuário
+
+  /users/bulk-upload:
+    post:
+      tags:
+        - Usuários
+      summary: Criar múltiplos usuários via upload de CSV
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                csvFile:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Usuários criados com sucesso a partir do CSV
+
+  #   Cursos:
+  /course/{id}:
+    get:
+      tags:
+        - Cursos
+      summary: Buscar dados do curso
+      responses:
+        200:
+          description: Dados básicos do curso
+
+  /users/{userId}/courses/{courseId}/progress:
+    get:
+      tags:
+        - Cursos
+      summary: Ver progresso do curso
+      responses:
+        200:
+          description: Progresso atual do curso
+
+  #   Unidades e Lições:
+  /units/{id}:
+    get:
+      tags:
+        - Unidades e Lições
+      summary: Buscar unidades do curso do usuário
+      responses:
+        200:
+          description: Lista de unidades do curso
+
+  /lessons/{id}:
+    get:
+      tags:
+        - Unidades e Lições
+      summary: Buscar lições da unidade
+      responses:
+        200:
+          description: Lista de lições da unidade
+
+  /lessons/{id}/complete:
+    post:
+      tags:
+        - Unidades e Lições
+      summary: Marcar lição como concluída
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+      responses:
+        200:
+          description: Lição marcada como concluída
+
+  # Configurações:
+  /settings/{id}:
+    get:
+      tags:
+        - Configurações
+      summary: Buscar configurações do curso do usuário
+      responses:
+        200:
+          description: Configurações atuais
+
+    put:
+      tags:
+        - Configurações
+      summary: Atualizar configurações do curso do usuário
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                selectedThemeKey:
+                  type: string
+      responses:
+        200:
+          description: Configurações atualizadas
+
+  #   Plugins:
+  /user-courses/{id}/gallery/upload:
+    post:
+      tags:
+        - Plugins
+      summary: Upload de imagem para a galeria do curso do usuário
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Imagem enviada com sucesso
+
+  #   Não utilizado:
+  #  /user-courses/{id}/course:
+  #    get:
+  #      tags:
+  #        - Cursos
+  #      summary: Buscar curso completo do usuário
+  #      responses:
+  #        200:
+  #          description: Dados completos do curso

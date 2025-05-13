@@ -1,0 +1,16 @@
+.swagger-ui .topbar-wrapper svg {
+  display: none !important;
+}
+
+.swagger-ui .topbar-wrapper .link::before {
+  content: "";
+  display: inline-block;
+  background-image: url("/uploads/app/space/1/login_logo.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: brightness(0) invert(1);
+  width: 120px;
+  height: 40px;
+  vertical-align: middle;
+  margin-right: 10px;
+}

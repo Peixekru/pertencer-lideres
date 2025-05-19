@@ -146,9 +146,9 @@ const handleLogin = async () => {
 
       if (themeExists) {
         applyTheme(themeKey)
-        console.info(`Tema '${themeKey}' aplicado após login.`)
+        //console.info(`Tema '${themeKey}' aplicado após login.`)
       } else {
-        console.warn(`Tema '${themeKey}' não encontrado. Aplicando fallback 'light'.`)
+        //console.warn(`Tema '${themeKey}' não encontrado. Aplicando fallback 'light'.`)
         applyTheme('light')
       }
 

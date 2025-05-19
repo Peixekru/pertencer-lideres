@@ -41,3 +41,13 @@ const corsOptions = {
 
 // Exporta o middleware CORS configurado
 export default cors(corsOptions);
+
+/*
+// ⚠️ CORS totalmente liberado — apenas para testes
+const corsOptions = {
+  origin: true, // Aceita qualquer origem
+  credentials: true, // Permite cookies/autenticação
+};
+
+export default cors(corsOptions);
+*/

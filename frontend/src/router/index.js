@@ -9,13 +9,13 @@ const routes = [
     path: '/',
     name: 'Login',
     component: () => import('@/views/LoginView.vue'),
-    meta: { noLayout: true }, // indica que não usa o layout padrão
+    meta: { noLayout: true }, // Rota requer autenticação
   },
   {
     path: '/course',
     name: 'Course',
     component: () => import('@/views/CourseView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }, // Rota requer autenticação
   },
   {
     path: '/lessons/:unitId',

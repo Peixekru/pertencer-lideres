@@ -9,3 +9,9 @@
     box-shadow: 0 0 $size $color;
   }
 }
+
+@mixin heading($size, $weight: 600, $lh: 1.3) {
+  font-size: $size;
+  font-weight: $weight;
+  line-height: $lh;
+}

@@ -45,3 +45,29 @@ a {
 .drop-shadow-4 {
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2) !important;
 }
+
+// iFrames 
+.layout-max-width { // Limita a largura do conteúdo centralizado, ideal para leitura e formulários
+  max-width: 1280px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.iframe-fixed { // Fixa o iframe abaixo da AppBar e ajusta altura para ocupar o restante da tela
+  position: fixed;
+  top: 65px;
+  height: calc(100vh - 65px);
+  border: none;
+  z-index: 1000;
+  transition: all .5s ease;
+}
+
+.iframe-centered { // Centraliza horizontalmente o iframe na tela
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.iframe-fullscreen { // Expande o iframe para ocupar toda a largura da tela
+  left: 0;
+  width: 100%;
+}

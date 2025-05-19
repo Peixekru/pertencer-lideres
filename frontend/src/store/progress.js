@@ -1,3 +1,14 @@
+/**
+ * Responsável por:
+ * - Buscar o progresso do curso de um usuário
+ * - Armazenar unidades e lições com status de conclusão
+ * - Fornecer utilitários para acessar lições e unidades por ID
+ *
+ * Observações:
+ * - Depende de authStore para recuperar o ID do usuário
+ * - Persistência automática do progresso em localStorage
+ */
+
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAuthStore } from './auth'
@@ -11,9 +22,7 @@ export const useProgressStore = defineStore(
     const loading = ref(false)
     const error = ref(null)
 
-    // --------------------------------
     // Getters
-    // --------------------------------
 
     // Retorna o progresso total do curso em %
     const courseProgress = computed(() => progressData.value?.course_progress || 0)
@@ -23,25 +32,30 @@ export const useProgressStore = defineStore(
     const getUnitProgressById = (unitId) => {
       return unitsWithProgress.value.find((u) => u.id === unitId) || null
     }
+    // Retorna uma lição pelo ID
+    function getLessonById(lessonId) {
+      for (const unit of progressData.value?.units || []) {
+        const lesson = unit.lessons?.find((l) => l.id === lessonId)
+        if (lesson) return lesson
+      }
+      return null
+    }
+    // Retorna o ID da unidade que contém uma lição
+    function getUnitIdByLessonId(lessonId) {
+      return progressData.value?.units?.find((u) => u.lessons?.some((l) => l.id === lessonId))?.id
+    }
 
-    // --------------------------------
     // Actions
-    // --------------------------------
 
     // Obtém o progresso do curso
     async function fetchCourseProgress(courseId) {
       startLoading()
       try {
         const authStore = useAuthStore()
-        // Obtém o ID do usuário
         const userId = authStore.user?.id
-        // Verifica se o ID do usuário está disponível
-        if (!userId || !courseId) {
-          throw new Error('Dados do usuário ou curso ausentes.')
-        }
-        // Faz a chamada à API para obter o progresso do curso
+        if (!userId || !courseId) throw new Error('Dados do usuário ou curso ausentes.')
+
         const response = await api.get(`/users/${userId}/courses/${courseId}/progress`)
-        // Atualiza o estado com os dados do progresso
         progressData.value = response.data
       } catch (err) {
         handleError(err)
@@ -49,26 +63,21 @@ export const useProgressStore = defineStore(
         stopLoading()
       }
     }
-    // Inicia estado de carregamento
+
+    // Utilitários internos
     function startLoading() {
       loading.value = true
       error.value = null
     }
-    // Finaliza estado de carregamento
     function stopLoading() {
       loading.value = false
     }
-    // Erro tratado e formatado
     function handleError(err) {
       console.error('Erro ao carregar progresso:', err)
       error.value = err?.response?.data?.message || err.message || 'Erro desconhecido.'
     }
 
-    // --------------------------------
     // Exposição
-    // --------------------------------
-
-    // Retorna o estado e ações
     return {
       progressData,
       loading,
@@ -77,6 +86,8 @@ export const useProgressStore = defineStore(
       unitsWithProgress,
       getUnitProgressById,
       fetchCourseProgress,
+      getLessonById,
+      getUnitIdByLessonId,
     }
   },
   {

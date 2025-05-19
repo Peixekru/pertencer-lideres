@@ -4,7 +4,7 @@ import { getPlaceholder, size } from '@/utils/placeholder'
 import api from '@/composables/useApi'
 
 // URL da API (sem /api)
-const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
+const API_BASE = import.meta.env.VITE_API_URL
 
 export const useSpaceStore = defineStore(
   'space',

@@ -1,15 +1,14 @@
 <template>
-  <v-container>
-    <!-- Navegação -->
-    <router-link
-      class="mx-auto mt-6 d-block"
-      to="/course"
-    >
-      ← Voltar ao curso
-    </router-link>
-
+  <v-container
+    class="mt-10"
+    style="max-width: 1280px; margin: 0 auto"
+  >
     <!-- Título -->
-    <h2 class="mt-6 mb-4">Escolha uma lição da Unidade {{ unitId }}</h2>
+
+    <h5 class="text-h4-20 text-primary mt-6 mb-6">
+      Conteúdos dessa unidade:
+      <span class="text-overline ms-2">id: {{ unitId }}</span>
+    </h5>
 
     <!-- Loading -->
     <v-progress-circular
@@ -27,7 +26,12 @@
     </v-alert>
 
     <!-- Lista de lições -->
-    <v-list v-if="lessons.length">
+    <v-list
+      v-if="lessons.length"
+      rounded="lg"
+      elevation="4"
+      class="pa-6"
+    >
       <v-list-item
         v-for="lesson in lessons"
         :key="lesson.id"
@@ -39,7 +43,8 @@
           <v-icon
             v-if="lesson.is_completed"
             color="success"
-            class="ml-2"
+            size="sm"
+            class="ms-2"
           >
             mdi-check-circle
           </v-icon>

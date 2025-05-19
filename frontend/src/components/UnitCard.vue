@@ -19,19 +19,14 @@
       aspect-ratio="16/9"
       cover
       :src="unit.image"
-      :lazy-src="unit.image"
+      :lazy-src="placeholder"
     >
       <template #placeholder>
-        <v-row
-          class="fill-height ma-0"
-          align="center"
-          justify="center"
-        >
-          <v-progress-circular
-            color="primary"
-            indeterminate
-          />
-        </v-row>
+        <v-skeleton-loader
+          type="image"
+          class="rounded"
+          style="width: 500%; height: 380px"
+        ></v-skeleton-loader>
       </template>
     </v-img>
 
@@ -79,7 +74,7 @@ const goToUnit = () => {
   router.push({ name: 'Lessons', params: { unitId: props.unit.id } })
 }
 
-//const placeholder = 'https://placehold.co/320x180?text=Unidade'
+const placeholder = 'https://placehold.co/500x300?text=Loaging...'
 </script>
 
 

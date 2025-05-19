@@ -1,3 +1,4 @@
+<!-- PATCH_APPLIED_BY_BACKEND_2025-05-18T15:26:46.867Z -->
 <!DOCTYPE html>
 <html lang="en" class="">
   <head>
@@ -5,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
 
-    <title>PDLE - Conteúdo demo para plataforma - Bloco avaliativo</title>
+    <title>PDLE - Conteúdo demo para plataforma - Bloco teórico</title>
 
     <link type="text/css" rel="stylesheet" href="lib/icomoon.css">
     <script type="text/javascript" src="lib/player-0.0.11.min.js"></script>
@@ -132,10 +133,10 @@
     window.i18n = {"available":["und"],"default":"und"};
     window.partnerContent = [];
 
-    var quizId = "FZkbJ8IZ5FiERSKoyOFtgfbZXxjy0GQZ";
+    var quizId = null;
     var storylineId = null;
     var completionPercentage = 100;
-    var reporting = 'passed-failed';
+    var reporting = 'completed-incomplete';
 
     var LMSProxySelections = [
       'CommitData',
@@ -185,7 +186,15 @@ function hookProxy(funcName) {
   return;
 }
 
-var LMSProxyFuncs = pick(LMSProxySelections, window.parent, Function.prototype);
+// MONKEY PATCHING LMSPROXY
+    window.LMSProxyFuncs = window.LMSProxyFuncs || {};
+    var LMSProxyFuncs = {};
+    LMSProxySelections.forEach(function (name) {
+      LMSProxyFuncs[name] = function () {
+        return null;
+      };
+    });
+    // END PATCH
 
 function noAPIFunction (funcName) {
   return function () {
@@ -261,7 +270,7 @@ function compress(data) {
     return JSON.stringify({
       v: 2,
       d: lzwCompress.pack(JSON.stringify(data)),
-      cpv: "c40bv-zE"
+      cpv: "4R0d7mCn"
     });
   } catch(e) {
     return '';
@@ -656,7 +665,27 @@ root.Runtime = {
 </script>
 
     
-    <script>__loadEntry()</script>
+    <script>__loadEntry();</script>
+
+
+<!-- MONKEY PATCHING PROGRESS -->
+<script>
+  // Interceptar setCourseProgress para monitorar progresso
+  const originalSetCourseProgress = window.Runtime.setCourseProgress;
+  window.Runtime.setCourseProgress = function (courseProgress) {
+    const progressData = window.Runtime.getProgress();
+    const message = {
+      type: "update",
+      payload: {
+        totalProgress: courseProgress,
+        lessons: progressData.lessons,
+      },
+    };
+    window.top.postMessage(message, "*");
+    return originalSetCourseProgress.apply(this, arguments);
+  };
+</script>
+<!-- END PATCHING -->
     
   </body>
 </html>

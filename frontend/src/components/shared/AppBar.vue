@@ -31,23 +31,37 @@
         class="w-100 pb-2 pt-4 mx-auto"
       >
         <!-- Logo -->
-        <div
-          style="width: 120px"
-          :class="settingsStore.isDark && 'svg-filter--white'"
-          :style="!showBackground && 'opacity: 0'"
-        >
-          <v-img
-            :src="headerLogoUrl"
-            max-height="40"
-            width="120"
-            contain
-          />
+        <!-- Logo ou botão voltar -->
+        <div>
+          <template v-if="isCourseView">
+            <div
+              style="width: 120px"
+              :class="settingsStore.isDark && 'svg-filter--white'"
+              :style="!showBackground && 'opacity: 0'"
+            >
+              <v-img
+                :src="headerLogoUrl"
+                max-height="40"
+                width="120"
+                contain
+              />
+            </div>
+          </template>
+          <template v-else>
+            <v-btn
+              icon
+              @click="goBack"
+              color="primary"
+            >
+              <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
+          </template>
         </div>
 
         <!-- Botões centrais -->
         <v-sheet
           color="transparent"
-          class="d-flex justify-center flex-grow-1"
+          class="d-flex justify-end flex-grow-1 me-1"
         >
           <v-btn
             icon
@@ -80,6 +94,7 @@
             class="mx-1 pa-0"
             color="primary"
             style="width: 40px; height: 40px"
+            @click="handleLogout"
           >
             <v-avatar
               size="40"
@@ -108,46 +123,69 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import { useAuthStore } from '@/store/auth'
 import { useSettingsStore } from '@/store/settings'
-// Sons dos botões
 import { useBeepSound } from '@/utils/sounds'
-//Logger
 import logger from '#logger'
 
-// inicialização dos stores
+// Inicializa os stores e efeitos sonoros
+const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
-useBeepSound()
 
-// Imagem do cabeçalho
-const { headerLogoUrl } = storeToRefs(settingsStore)
+// Acesso à rota atual
+const route = useRoute()
+const router = useRouter()
 
-// Icones da do app-bar
-const { headerIcons } = storeToRefs(settingsStore)
+// Imagem e ícones do cabeçalho
+const { headerLogoUrl, headerIcons } = storeToRefs(settingsStore)
 
-// Variáveis reativas
+// Estado de fundo da app-bar
 const showBackground = ref(false)
 
-// Função para lidar com o evento de rolagem
+// Detecta se está na rota de curso (única que depende de scroll)
+const isCourseView = computed(() => route.path.startsWith('/course'))
+
+// Atualiza visibilidade do fundo da app-bar com base na rota e scroll
 const handleScroll = () => {
-  showBackground.value = window.scrollY > 60
+  showBackground.value = !isCourseView.value || window.scrollY > 60
 }
 
-// Propriedades exportadas
+// Função para voltar à página anterior
+const goBack = () => router.back()
+
+// Sai da conta
+const handleLogout = () => {
+  authStore.logout()
+}
+
+// Props da app-bar
 defineProps({
-  // Progresso do curso
   progress: {
     type: Number,
     required: true,
   },
 })
 
-// inicialização
+// Inicializa e limpa o listener de scroll
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  handleScroll()
+  useBeepSound()
 })
-</script>
 
-<style lang="scss" scoped>
-</style>
+// Limpa o listener de scroll ao desmontar o componente
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+// Reavalia o estado da AppBar sempre que o caminho da rota mudar
+watch(
+  () => route.path,
+  () => {
+    handleScroll()
+  }
+)
+</script>

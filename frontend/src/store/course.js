@@ -1,6 +1,7 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { ref, computed } from 'vue'
 import { useUserCoursesStore } from './userCourses'
+import { useSettingsStore } from './settings'
 import { getUrl } from '@/utils/url'
 import api from '@/composables/useApi'
 
@@ -73,9 +74,14 @@ export const useCourseStore = defineStore(
 
     // Estilo da camada de cor (gradiente ou cor sólida)
     const backgroundColorStyle = computed(() => {
+      // instância do store de configurações
+      const settingsStore = useSettingsStore()
+      // obtém a referência computada isDark
+      const { isDark } = storeToRefs(settingsStore)
+      // obtém o curso atual
       const course = currentCourse.value
-      // Cor de fallback
-      const fallback = '#f5f5f5'
+      // Cor de fallback para cor escura ou clara
+      const fallback = isDark.value ? '#1e1e1e' : '#f5f5f5'
       if (!course) return { backgroundColor: fallback }
       // Verifica se há gradiente
       if (course.background_color_1 && course.background_color_2) {

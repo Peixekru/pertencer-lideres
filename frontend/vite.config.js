@@ -9,14 +9,14 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   plugins: [
     vue({
-      template: { transformAssetUrls }
+      template: { transformAssetUrls },
     }),
-    vueDevTools(),
+    //vueDevTools(),
   ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-    }
+    },
   },
   build: {
     rollupOptions: {
@@ -24,13 +24,23 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules')) {
             // separa cada lib em seu próprio chunk
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
+            return id.toString().split('node_modules/')[1].split('/')[0].toString()
           }
-        }
-      }
-    }
+        },
+      },
+    },
   },
   server: {
-    port: 5173,
-  }
+    proxy: {
+      '/api/uploads/.*': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
 })

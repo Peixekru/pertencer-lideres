@@ -2,6 +2,7 @@
   <v-container
     fluid
     class="fill-height pa-0 d-flex flex-column"
+    style="max-width: 1280px; margin: 0 auto"
   >
     <!-- descrição -->
     <v-container
@@ -10,7 +11,7 @@
     >
       <v-row
         justify="start"
-        style="max-width: 1200px; margin: 0 auto"
+        style="margin: 0 auto"
       >
         <v-sheet
           color="transparent"
@@ -38,10 +39,7 @@
       fluid
       class="py-8"
     >
-      <v-row
-        justify="center"
-        style="max-width: 1200px; margin: 0 auto"
-      >
+      <v-row justify="center">
         <v-col
           v-for="(unit, index) in unidades"
           :key="index"
@@ -49,7 +47,7 @@
           sm="6"
           md="4"
           lg="3"
-          xl="2"
+          xl="3"
           class="py-6"
         >
           <UnitCard
@@ -73,11 +71,19 @@
           <v-card
             class="py-6"
             elevation="0"
+            rounded="lg"
+            style="opacity: 0.5"
           >
-            <p class="text-subtitle-1 mt-2">Funcionalidade {{ i + 1 }}</p>
-            <v-icon size="48">mdi-lock</v-icon>
+            <p class="text-subtitle-1 text-primary my-2">Funcionalidade {{ i + 1 }}</p>
+            <v-icon
+              size="48"
+              color="primary"
+            >
+              mdi-progress-clock
+            </v-icon>
             <v-sheet>
               <v-btn
+                disabled
                 class="mt-2"
                 variant="text"
               >
@@ -102,20 +108,31 @@
 
     <!-- Menu flutuante lateral (desktop) -->
     <v-sheet
-      color="rgba(100,100,100,.2)"
-      rounded="pill"
-      style="padding: 4px"
-      class="floating-menu d-none d-md-flex flex-column align-center"
+      color="primary"
+      rounded="lg"
+      class="floating-menu d-none d-md-flex flex-column align-center px-1 py-2"
     >
+      <!-- Ícones dos badges -->
       <v-btn
-        v-for="(badge, i) in badges"
-        :key="i"
+        v-for="(badge, i) in lessonBadges"
+        :key="badge.lessonId"
         icon
-        color="rgba(0,0,0,.1)"
+        color="rgba(255,255,255,.4)"
         class="inner-shadow-4"
         :class="{ 'mb-2': i < badges.length - 1 }"
       >
-        <v-icon color="white">{{ badge.icon }}</v-icon>
+        <v-icon size="32">
+          <v-img :src="badge.icon" />
+        </v-icon>
+      </v-btn>
+      <!-- Ícone do progresso -->
+      <v-btn
+        icon
+        color="transparent"
+        elevation="0"
+        class="mt-2"
+      >
+        <v-icon size="32">mdi-progress-clock</v-icon>
       </v-btn>
     </v-sheet>
   </v-container>
@@ -130,12 +147,14 @@ import { useSpaceStore } from '@/store/space'
 import { useSettingsStore } from '@/store/settings'
 import { useCourseStore } from '@/store/course'
 import { useUnitStore } from '@/store/unit'
+import { useLessonStore } from '@/store/lesson'
 import { useProgressStore } from '@/store/progress'
 import { mapUnitsWithLockState } from '@/domain/progress/mapUnitsWithLockState'
 
 // Componentes
 import UnitCard from '@/components/UnitCard.vue'
 // Sons dos botões
+import { getUrl } from '@/utils/url'
 import { useBeepSound } from '@/utils/sounds'
 //Logger
 import logger from '#logger'
@@ -145,6 +164,7 @@ const spaceStore = useSpaceStore()
 const settingsStore = useSettingsStore()
 const courseStore = useCourseStore()
 const unitStore = useUnitStore()
+const lessonStore = useLessonStore()
 const progressStore = useProgressStore()
 
 // Sons dos botões
@@ -158,7 +178,24 @@ const footerLogoUrl = spaceStore.getFooterLogoUrl()
 const courseTitle = ref('')
 const courseSubtitle = ref('')
 
-//
+const lessonBadges = computed(() => {
+  return lessonStore.lessons
+    .filter((lesson) => lesson.badge)
+    .sort((a, b) => a.order_index - b.order_index)
+    .map((lesson) => ({
+      icon: getUrl(lesson.badge),
+      lessonId: lesson.id,
+    }))
+})
+
+/**
+ * Lista computada de unidades do curso com base no progresso do aluno.
+ *
+ * - Aplica regras de desbloqueio progressivo.
+ * - Enriquecida com imagem, progresso e estado de bloqueio.
+ *
+ * @type {import('@/utils/mapUnitsWithLockState').MappedUnit[]}
+ */
 const unidades = computed(() =>
   mapUnitsWithLockState(progressStore.unitsWithProgress, unitStore.getUnitById)
 )
@@ -176,7 +213,14 @@ onMounted(async () => {
   // Atualiza o subtítulo do curso
   courseSubtitle.value = courseStore.currentCourse?.subtitle
 
-  logger.stInf('Retorno de unidades', unidades.value)
+  /**
+   * Pré-carrega todas as lições das unidades desbloqueadas.
+   * Garante que as lições venham tratadas pelo middleware (ex: patch SCORM).
+   * * @todo Mover para camada de orquestração se lógica crescer.
+   */
+  await lessonStore.preloadLessonsForUnits(unidades.value)
+
+  logger.stInf('Lista de unidades', unidades.value)
 })
 
 // mock de badges

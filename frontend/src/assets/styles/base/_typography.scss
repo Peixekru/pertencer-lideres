@@ -1,0 +1,65 @@
+@use '../abstracts/mixins';
+
+// h1 → h2 (delta = 2.25rem)
+.text-h1-10 { @include mixins.heading(5.775rem, 700, 1.1); }
+.text-h1-20 { @include mixins.heading(5.55rem, 700, 1.1); }
+.text-h1-30 { @include mixins.heading(5.325rem, 700, 1.1); }
+.text-h1-40 { @include mixins.heading(5.1rem, 700, 1.1); }
+.text-h1-50 { @include mixins.heading(4.875rem, 700, 1.1); }
+.text-h1-60 { @include mixins.heading(4.65rem, 700, 1.1); }
+.text-h1-70 { @include mixins.heading(4.425rem, 700, 1.1); }
+.text-h1-80 { @include mixins.heading(4.2rem, 700, 1.1); }
+.text-h1-90 { @include mixins.heading(3.975rem, 700, 1.2); }
+.text-h2    { @include mixins.heading(3.75rem, 700, 1.2); }
+
+// h2 → h3 (delta = 0.75rem)
+.text-h2-10 { @include mixins.heading(3.675rem, 700, 1.2); }
+.text-h2-20 { @include mixins.heading(3.6rem, 700, 1.2); }
+.text-h2-30 { @include mixins.heading(3.525rem, 700, 1.2); }
+.text-h2-40 { @include mixins.heading(3.45rem, 700, 1.2); }
+.text-h2-50 { @include mixins.heading(3.375rem, 700, 1.25); }
+.text-h2-60 { @include mixins.heading(3.3rem, 700, 1.25); }
+.text-h2-70 { @include mixins.heading(3.225rem, 700, 1.25); }
+.text-h2-80 { @include mixins.heading(3.15rem, 700, 1.25); }
+.text-h2-90 { @include mixins.heading(3.075rem, 700, 1.25); }
+.text-h3    { @include mixins.heading(3.0rem, 600, 1.25); }
+
+// h3 → h4 (delta = 0.875rem)
+.text-h3-10 { @include mixins.heading(2.9125rem, 600, 1.25); }
+.text-h3-20 { @include mixins.heading(2.825rem, 600, 1.25); }
+.text-h3-30 { @include mixins.heading(2.7375rem, 600, 1.3); }
+.text-h3-40 { @include mixins.heading(2.65rem, 600, 1.3); }
+.text-h3-50 { @include mixins.heading(2.5625rem, 600, 1.3); }
+.text-h3-60 { @include mixins.heading(2.475rem, 600, 1.3); }
+.text-h3-70 { @include mixins.heading(2.3875rem, 600, 1.3); }
+.text-h3-80 { @include mixins.heading(2.3rem, 600, 1.3); }
+.text-h3-90 { @include mixins.heading(2.2125rem, 600, 1.3); }
+.text-h4    { @include mixins.heading(2.125rem, 600, 1.3); }
+
+// h4 → h5 (delta = 0.625rem)
+.text-h4-10 { @include mixins.heading(2.0625rem, 600, 1.3); }
+.text-h4-20 { @include mixins.heading(2.0rem, 600, 1.3); }
+.text-h4-30 { @include mixins.heading(1.9375rem, 600, 1.3); }
+.text-h4-40 { @include mixins.heading(1.875rem, 600, 1.3); }
+.text-h4-50 { @include mixins.heading(1.8125rem, 600, 1.3); }
+.text-h4-60 { @include mixins.heading(1.75rem, 600, 1.3); }
+.text-h4-70 { @include mixins.heading(1.6875rem, 600, 1.3); }
+.text-h4-80 { @include mixins.heading(1.625rem, 600, 1.3); }
+.text-h4-90 { @include mixins.heading(1.5625rem, 600, 1.3); }
+.text-h5    { @include mixins.heading(1.5rem, 600, 1.3); }
+
+// h5 → h6 (delta = 0.25rem)
+.text-h5-10 { @include mixins.heading(1.475rem, 600, 1.4); }
+.text-h5-20 { @include mixins.heading(1.45rem, 600, 1.4); }
+.text-h5-30 { @include mixins.heading(1.425rem, 600, 1.4); }
+.text-h5-40 { @include mixins.heading(1.4rem, 600, 1.4); }
+.text-h5-50 { @include mixins.heading(1.375rem, 600, 1.4); }
+.text-h5-60 { @include mixins.heading(1.35rem, 600, 1.4); }
+.text-h5-70 { @include mixins.heading(1.325rem, 600, 1.4); }
+.text-h5-80 { @include mixins.heading(1.3rem, 600, 1.4); }
+.text-h5-90 { @include mixins.heading(1.275rem, 600, 1.4); }
+.text-h6    { @include mixins.heading(1.25rem, 600, 1.4); }
+
+
+
+

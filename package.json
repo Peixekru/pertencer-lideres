@@ -9,6 +9,7 @@
     "stop": "npm-run-all stop:db stop:ports",
     "start:db": "docker-compose -f database/docker-compose.yml up -d",
     "start:backend": "cd backend && npm run dev",
+    "start:prod": "cd backend && NODE_ENV=production node server.js",
     "start:frontend": "cd frontend && npm run dev",
     "wait:db": "wait-port -t 30000 localhost:3306",
     "start": "npm-run-all start:db wait:db -p start:backend start:frontend"

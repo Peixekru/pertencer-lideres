@@ -2,14 +2,16 @@
 # spaceId: 1 -> pertencer_lideres
 # role - adimin, manager, suport, user
 
-POST http://localhost:3000/api/users
+# Rodrigo_001 / Rui_0000001
+
+POST http://localhost:3001/api/users
 Content-Type: application/json
 
 {
-  "login": "user_000001",
-  "password": "user_000001",
+  "login": "Rui_0000001",
+  "password": "Rui_0000001",
   "spaceId": 1,
-  "role": "user"
+  "role": "manager"
 }
 
 ###  Login

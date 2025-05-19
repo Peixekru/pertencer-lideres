@@ -37,7 +37,7 @@ export async function verifyLessonsFromUnit(req, res, next) {
       try {
         // Caso a lição seja RISE
         if (lesson.content_type === "rise") {
-          if (lesson.content_url.includes("scormcontent")) continue; // Já patchado
+          if (lesson.content_url.includes("scormcontent")) continue; // Já patchado via caminho
 
           const targetFile = await findHtmlFile(dir, "index.html", [
             "scormcontent",
@@ -45,7 +45,20 @@ export async function verifyLessonsFromUnit(req, res, next) {
           if (!targetFile) continue;
 
           let html = await fs.readFile(targetFile, "utf-8");
-          if (html.includes("PATCH_APPLIED_BY_BACKEND")) continue;
+
+          if (html.includes("PATCH_APPLIED_BY_BACKEND")) {
+            // Patch já aplicado, mas verifica e corrige content_url se necessário
+            const parts = lesson.content_url.split("/");
+            parts.pop();
+            const newContentUrl = [...parts, "scormcontent", "index.html"].join(
+              "/"
+            );
+            await pool.execute(
+              "UPDATE lessons SET content_url = ? WHERE id = ?",
+              [newContentUrl, lesson.id]
+            );
+            continue;
+          }
 
           // Aplica o patch e adiciona o marcador no topo
           const fullyPatched = patchRise(html);
@@ -58,7 +71,6 @@ export async function verifyLessonsFromUnit(req, res, next) {
           const newContentUrl = [...parts, "scormcontent", "index.html"].join(
             "/"
           );
-
           await pool.execute(
             "UPDATE lessons SET content_url = ? WHERE id = ?",
             [newContentUrl, lesson.id]

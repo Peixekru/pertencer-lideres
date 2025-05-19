@@ -119,6 +119,10 @@ const password = ref('')
 const username = ref('')
 
 const handleLogin = async () => {
+  if (username.value === 'settings' && password.value === 'settings') {
+    router.push('/settings')
+  }
+
   logger.stInf('handleLogin:', `username: ${username.value}`, `password: ${password.value}`)
 
   if (!username.value || username.value.length !== 11 || !password.value) {

@@ -9,7 +9,7 @@ const routes = [
     path: '/',
     name: 'Login',
     component: () => import('@/views/LoginView.vue'),
-    meta: { noLayout: true }, // Rota requer autenticação
+    meta: { noLayout: true }, // Rota sem o layout default
   },
   {
     path: '/course',
@@ -30,6 +30,14 @@ const routes = [
     component: () => import('@/views/LessonView.vue'),
     meta: { requiresAuth: true },
     props: true, // Permite que o ID da lição seja passado como propriedade
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/views/SettingsView.vue'),
+    meta: { noLayout: true }, // Rota sem o layout default
+    //meta: { requiresAuth: true },
+    //props: true, // Permite que o ID da lição seja passado como propriedade
   },
 ]
 

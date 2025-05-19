@@ -15,6 +15,8 @@ import usersRoutes from "./routes/usersRoutes.js";
 import userCoursesRoutes from "./routes/userCoursesRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 
+import editorConfigRoutes from "./routes/editorConfig.routes.js";
+
 // Inicia app
 const app = express();
 
@@ -41,6 +43,8 @@ app.use("/api", spacesRoutes);
 app.use("/api", usersRoutes);
 app.use("/api", userCoursesRoutes);
 app.use("/api", courseRoutes);
+
+app.use("/api/editor-config", editorConfigRoutes);
 
 // Arquivos estáticos (imagens, scorm, etc.)
 app.use("/api/uploads", express.static(getRootPath("uploads")));

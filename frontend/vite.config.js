@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { transformAssetUrls } from 'vite-plugin-vuetify'
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
+//import vueDevTools from 'vite-plugin-vue-devtools'
 //import path from 'path';
 
 // https://vite.dev/config/
@@ -33,12 +33,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/uploads/.*': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3000',
         changeOrigin: true,
       },
     },

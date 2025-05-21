@@ -5,7 +5,8 @@
 .swagger-ui .topbar-wrapper .link::before {
   content: "";
   display: inline-block;
-  background-image: url("/uploads/app/space/1/login_logo.svg");
+  background-image: url("/api/uploads/app/space/1/login_logo.svg");
+  /* Local ->  background-image: url("/uploads/app/space/1/login_logo.svg");*/
   background-repeat: no-repeat;
   background-size: contain;
   filter: brightness(0) invert(1);

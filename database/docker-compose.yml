@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mysql:
@@ -12,12 +12,13 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./data:/var/lib/mysql  # Persist data in a named volume
+      - ./data:/var/lib/mysql # Persist data in a named volume
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 10s
       retries: 5
+    restart: always
 
 volumes:
   mysql_data:

@@ -1,21 +1,22 @@
+// Carrega as variáveis do arquivo .env
+import "./src/config/envSetup.js";
+
+// Importa a instância do app Express configurado em app.js
 import app from "./src/app.js";
 
-// Lê as variáveis do .env para servidor
-const isProduction = process.env.NODE_ENV === "production"; // Verifica se está em produção
+// Determina o ambiente com base no NODE_ENV ou usa "development" como padrão
+const env = process.env.NODE_ENV || "development";
 
-// Usa as variáveis conforme o ambiente ( Produção ou Desenvolvimento)
+// Configurações do servidor ou usa localhost:3000 como padrão
+const HOST = process.env.SERVER_HOST || "localhost";
+const PORT = Number(process.env.SERVER_PORT || 3000);
 
-const HOST = isProduction
-  ? process.env.SERVER_HOST_PROD
-  : process.env.SERVER_HOST_DEV;
-const PORT = Number(
-  isProduction ? process.env.SERVER_PORT_PROD : process.env.SERVER_PORT_DEV
-);
-
+// Inicia o servidor
 const server = app.listen(PORT, HOST, () => {
-  console.log(`🚀 Servidor rodando em http://${HOST}:${PORT}`);
+  console.log(`🚀 Servidor rodando em http://${HOST}:${PORT} [${env}]`);
 });
 
+// Escuta sinais de encerramento (Ctrl+C, etc.) e encerra o servidor com segurança
 process.on("SIGINT", () => {
   server.close(() => {
     console.log("❌ Servidor encerrado");

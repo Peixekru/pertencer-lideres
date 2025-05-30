@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  mysql:
+    container_name: pertencer-mysql-staging # Nome únic
+    image: mysql:8.0 # Usar versão fixa, evita interferência com :latest
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: pertencer_db
+      MYSQL_USER: pertencer_user
+      MYSQL_PASSWORD: userpassword
+    ports:
+      - "3307:3306" # Porta diferente da produção
+    volumes:
+      - pertencer_mysql_data_staging:/var/lib/mysql
+      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    networks:
+      - pertencer_staging_net
+    labels:
+      - environment=staging # Ajuda na identificação
+
+volumes:
+  pertencer_mysql_data_staging: # Volume com nome único
+
+networks:
+  pertencer_staging_net:
+    driver: bridge

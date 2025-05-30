@@ -1,53 +1,44 @@
+import "../config/envSetup.js";
 import cors from "cors";
-import "dotenv/config";
 
-// Lista de origens permitidas, vindas do .env
-// - FRONTEND_URL_VITE: ambiente de desenvolvimento com Vite
-// - FRONTEND_URL_DIST: frontend buildado sendo servido localmente
-// - FRONTEND_URL_PROD: domínio principal de produção
-// - FRONTEND_URL_ADMN: domínio da área administrativa
+// Lista de origens confiáveis definidas via variável de ambiente
+// FRONTEND_URL deve ser especificada em cada .env.<ambiente>
+// Exemplo: http://159.203.185.226:8081, http://159.203.185.226:8081
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL_VITE,
-  process.env.FRONTEND_URL_DIST,
-  process.env.FRONTEND_URL_PROD,
-  process.env.FRONTEND_URL_ADMN,
-].filter(Boolean); // Remove entradas vazias ou undefined
+// Converte a variável FRONTEND_URL (separada por vírgulas) em um array de origens permitidas.
+// Remove espaços em branco e barras finais para garantir que 'http://159.203.185.226:8081' e 'http://localhost:5173/'
+// sejam tratados como equivalentes durante a verificação de CORS.
+
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(",").map((url) =>
+      url.trim().replace(/\/$/, "")
+    )
+  : [];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Em dev, exibe no console a origem da requisição
+    // Loga a origem da requisição em ambientes não-produtivos (útil para debug)
     if (process.env.NODE_ENV !== "production") {
-      console.log("Origin:", origin);
+      console.log("🔍 Requisição de origem:", origin);
     }
 
-    // Permite requisições sem 'origin' (ex: curl, apps móveis, backend interno)
+    // Permite requisições sem origem (ex: curl, Postman, servidores internos)
     if (!origin) {
       return callback(null, true);
     }
 
-    // Permite se a origem estiver na lista de confiáveis
+    // Permite se a origem estiver explicitamente autorizada no .env
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
-    } else {
-      // Bloqueia se não for uma origem conhecida
-      return callback(new Error(`CORS bloqueado para origem: ${origin}`));
     }
+
+    // Rejeita a requisição se a origem não for reconhecida
+    return callback(new Error(`🚫 CORS bloqueado para origem: ${origin}`));
   },
 
-  // Permite envio de cookies/autenticação entre domínios
+  // Permite o envio de cookies/autenticação entre domínios (requerido com credentials: true no frontend)
   credentials: true,
 };
 
-// Exporta o middleware CORS configurado
+// Exporta o middleware configurado para uso no app Express
 export default cors(corsOptions);
-
-/*
-// ⚠️ CORS totalmente liberado — apenas para testes
-const corsOptions = {
-  origin: true, // Aceita qualquer origem
-  credentials: true, // Permite cookies/autenticação
-};
-
-export default cors(corsOptions);
-*/

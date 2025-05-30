@@ -1,3 +1,4 @@
+import "../config/envSetup.js";
 import { comparePassword } from "../utils/cryptService.js";
 
 import {
@@ -12,6 +13,9 @@ import {
   findUserByLogin,
   findUserByIdAndToken,
 } from "../services/findUserService.js";
+
+// Verifica se está em produção
+const isSecureEnv = process.env.NODE_ENV === "production";
 
 // Login
 export const login = async (req, res) => {
@@ -36,8 +40,8 @@ export const login = async (req, res) => {
     // Setar refresh token como httpOnly cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // só HTTPS em produção
-      sameSite: "Strict",
+      secure: isSecureEnv, // apenas HTTPS
+      sameSite: isSecureEnv ? "None" : "Lax", // None só funciona com HTTPS
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
     });
 
@@ -83,8 +87,8 @@ export const refreshToken = async (req, res) => {
     // Define o novo cookie com o refresh token
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Só envia via HTTPS em produção
-      sameSite: "Strict",
+      secure: isSecureEnv, // apenas HTTPS
+      sameSite: isSecureEnv ? "None" : "Lax", // None só funciona com HTTPS
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
     });
 
@@ -116,8 +120,8 @@ export const logout = async (req, res) => {
 
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      secure: isSecureEnv, // apenas HTTPS
+      sameSite: isSecureEnv ? "None" : "Lax", // None só funciona com HTTPS
     });
 
     res.json({ message: "Logout realizado com sucesso" });

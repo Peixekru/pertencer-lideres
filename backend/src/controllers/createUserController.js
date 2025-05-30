@@ -1,9 +1,13 @@
+import "../config/envSetup.js";
 import { createUserInDB } from "../services/createUserService.js";
 import { findUserByLogin } from "../services/findUserService.js";
 import { hashPassword } from "../utils/cryptService.js";
 import {
   generateRefreshToken /* , updateRefreshToken */,
 } from "../utils/tokenService.js";
+
+// Verifica se está em produção
+const isSecureEnv = process.env.NODE_ENV === "production";
 
 export const createUser = async (req, res) => {
   const { login, password, spaceId, role } = req.body;
@@ -34,8 +38,8 @@ export const createUser = async (req, res) => {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Envia apenas via HTTPS em produção
-      sameSite: "Strict", // Proteção contra ataques CSRF (ajuste conforme necessidade)
+      secure: isSecureEnv, // apenas HTTPS
+      sameSite: isSecureEnv ? "None" : "Lax", // None só funciona com HTTPS
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

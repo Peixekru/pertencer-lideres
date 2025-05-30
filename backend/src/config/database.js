@@ -1,6 +1,7 @@
-import "dotenv/config";
+import "./envSetup.js";
 import mysql from "mysql2/promise";
 
+// Cria um pool de conexões com base nas variáveis de ambiente
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,

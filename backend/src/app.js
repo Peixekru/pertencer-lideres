@@ -20,6 +20,11 @@ import editorConfigRoutes from "./routes/editorConfig.routes.js";
 // Inicia app
 const app = express();
 
+// Vrifica se as variáveis de ambientes foram carregadas
+if (!process.env.SERVER_PORT) {
+  console.warn("⚠️ Variáveis de ambiente não carregadas corretamente!");
+}
+
 // Middlewares
 app.use(corsConfig);
 app.use(express.json());
@@ -49,10 +54,20 @@ app.use("/api/editor-config", editorConfigRoutes);
 // Arquivos estáticos (imagens, scorm, etc.)
 app.use("/api/uploads", express.static(getRootPath("uploads")));
 
-// ----------------------------------
-// SERVIR FRONTEND (apenas em produção)
-// ----------------------------------
-if (process.env.NODE_ENV === "production") {
+// Rota de saúde (health check)
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    environment: process.env.NODE_ENV || "development",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// -----------------------------------
+// SERVIR FRONTEND (em produção ou staging)
+// -----------------------------------
+
+if (["production", "staging"].includes(process.env.NODE_ENV)) {
   const frontendDistPath = getRootPath("../frontend/dist");
 
   app.use(express.static(frontendDistPath));
@@ -71,6 +86,9 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-console.log("NODE_ENV atual:", process.env.NODE_ENV);
+// Loga o ambiente atual
+console.log(`🔧 App iniciado em ambiente: ${process.env.NODE_ENV}`);
+// Loga a URL do frontend
+console.log("🌐 FRONTEND_URL permitido:", process.env.FRONTEND_URL);
 
 export default app;

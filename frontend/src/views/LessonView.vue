@@ -15,7 +15,7 @@
         <!-- Título da lição -->
         <v-row no-gutters>
           <v-col cols="auto">
-            <v-text class="text-h1-70 font-weight-medium text-primary">01</v-text>
+            <h1 class="text-h1-70 font-weight-medium text-primary">01</h1>
           </v-col>
 
           <v-col class="ms-4">
@@ -23,9 +23,9 @@
               no-gutters
               align="center"
             >
-              <v-text class="text-h4-20 text-primary mt-1">
+              <h4 class="text-h4-20 text-primary mt-1">
                 {{ lessonDetails?.title || 'Lição não encontrada' }}
-              </v-text>
+              </h4>
               <span class="text-overline text-primary ms-4 mt-3">(ID: {{ lessonId }})</span>
               <v-icon
                 v-if="isCompleted"
@@ -36,7 +36,7 @@
                 mdi-check-circle
               </v-icon>
             </v-row>
-            <v-text class="mt-1 text-primary">Título da lição</v-text>
+            <p class="mt-1 text-primary">Título da lição</p>
           </v-col>
         </v-row>
 
@@ -144,6 +144,13 @@
         </v-btn>-->
       </v-col>
     </v-row>
+    <LessonFooter
+      :isCompleted="isCompleted"
+      :isUnitFinished="isUnitFinished"
+      :nextTitle="nextLessonTitle"
+      :nextLesson="nextLesson"
+      @next="handleNextLesson"
+    />
   </v-container>
 </template>
 
@@ -156,6 +163,7 @@ import { useLessonStore } from '@/store/lesson'
 import { useCourseStore } from '@/store/course'
 import { initVimeoPlayer } from '@/utils/vimeo'
 import { getUrl } from '@/utils/url'
+import LessonFooter from '@/components/LessonFooter.vue'
 import logger from '#logger'
 
 const route = useRoute()
@@ -166,15 +174,16 @@ const progressStore = useProgressStore()
 const lessonStore = useLessonStore()
 const courseStore = useCourseStore()
 
-const lessonId = Number(route.params.lessonId)
+const lessonId = computed(() => Number(route.params.lessonId))
 //const unitId = computed(() => progressStore.getUnitIdByLessonId(lessonId))
+
 const { lessonDetails } = storeToRefs(lessonStore)
 const lessonType = computed(() => lessonDetails.value?.content_type)
-const isCompleted = computed(() => progressStore.getLessonById(lessonId)?.is_completed === 1)
+const isCompleted = computed(() => progressStore.getLessonById(lessonId.value)?.is_completed === 1)
 
 const goBack = () => router.back()
 const markAsCompleted = async () => {
-  if (!isCompleted.value) await lessonStore.completeLesson(lessonId)
+  if (!isCompleted.value) await lessonStore.completeLesson(lessonId.value)
 }
 
 // Lógica de tela cheia Rise
@@ -205,22 +214,79 @@ const handleStorylineProgress = (event) => {
   }
 }
 
+// Estado para footer
+const nextLesson = ref(null)
+const isUnitFinished = ref(false)
+const isFinished = ref(false)
+const userRating = ref(0)
+const nextLessonTitle = computed(() => nextLesson.value?.title || '')
+
+// Handler do botão próximo
+function handleNextLesson() {
+  console.log('Avançando para a lição:', nextLesson.value)
+  if (isUnitFinished.value) {
+    router.push('/course')
+  } else if (nextLesson.value?.id) {
+    router.push(`/lesson/${nextLesson.value.id}`)
+  }
+}
+
 /**
  * Observa mudança de lessonId (navegação entre lições)
  * - Garante carregamento do conteúdo correto
  * - Ativa o listener apropriado conforme o tipo de lição
  */
 watch(
-  () => lessonId,
+  () => lessonId.value,
   async (id, _, onCleanup) => {
     if (!id) return
 
-    // Só busca se lessonDetails não estiver carregada ou for de outra lição
+    // Garante que o progresso do curso esteja carregado
+    if (!progressStore.progressData) {
+      const courseId = courseStore.currentCourse?.id
+      if (courseId) await progressStore.fetchCourseProgress(courseId)
+    }
+
+    // Busca o ID da unidade com base na lessonId atual
+    const unitId = progressStore.getUnitIdByLessonId(id)
+
+    // Verifica se conseguiu identificar a unidade
+    if (!unitId) {
+      console.warn('UnitId não encontrado para lessonId:', id)
+      return
+    }
+
+    // Garante que os detalhes da lição atual estejam carregados
     let lesson = lessonDetails.value
     if (!lesson || lesson.id !== lessonId) {
-      // Busca os detalhes da lição
-      const unitId = progressStore.getUnitIdByLessonId(id)
       lesson = await lessonStore.fetchLessonDetails(unitId, id)
+    }
+
+    // Busca todas as lições da unidade
+    await lessonStore.fetchLessons(unitId)
+
+    // Filtra as lições da unidade e ordena pelo índice de ordem
+    const lessons = lessonStore.lessons
+      .filter((l) => l.unit_id === unitId)
+      .sort((a, b) => a.order_index - b.order_index)
+
+    // Identifica o índice da lição atual na lista ordenada
+    const currentIndex = lessons.findIndex((l) => l.id === id)
+
+    // Obtém a próxima lição, se houver
+    const nextLessonData = lessons[currentIndex + 1]
+
+    // Atualiza o estado com os dados da próxima lição
+    if (nextLessonData) {
+      nextLesson.value = {
+        title: nextLessonData.title,
+        id: nextLessonData.id,
+      }
+      isUnitFinished.value = false
+    } else {
+      // Se não houver próxima lição, marca unidade como concluída
+      nextLesson.value = null
+      isUnitFinished.value = true
     }
 
     if (lesson.content_type === 'vimeo') {

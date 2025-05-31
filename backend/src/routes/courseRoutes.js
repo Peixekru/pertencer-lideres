@@ -6,6 +6,7 @@ import { getSettingsByUserCourseIdController } from "../controllers/getSettingsB
 import { getProgressByUserCourseController } from "../controllers/getProgressByUserCourseController.js";
 import { completeLessonController } from "../controllers/completeLessonController.js";
 import { updateSettingsByUserCourseIdController } from "../controllers/putSettingsByUserCourseIdController.js";
+import { rateLessonController } from "../controllers/rateLesson.controller.js";
 
 import { verifyLessonsFromUnit } from "../middlewares/verifyLessonsFromUnit.js";
 //import { authenticateToken } from "../middlewares/authMiddleware.js";
@@ -38,6 +39,12 @@ router.post(
   "/lessons/:lessonId/complete",
   /*authenticateToken,*/ completeLessonController
 );
+router.patch(
+  "/lessons/:lessonId/rating",
+  /* authenticateToken, */
+  rateLessonController
+);
+
 router.put(
   "/settings/:userCourseId",
   /*authenticateToken,*/ updateSettingsByUserCourseIdController

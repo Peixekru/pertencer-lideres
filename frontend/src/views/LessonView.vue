@@ -131,25 +131,18 @@
             <p>Tipo de conteúdo não suportado.</p>
           </template>
         </v-container>
-
-        <!-- Botão de concluir -->
-        <!--<v-btn
-          color="primary"
-          class="mt-6"
-          :disabled="isCompleted"
-          @click="markAsCompleted"
-        >
-          <v-icon left>mdi-check</v-icon>
-          {{ isCompleted ? 'Concluído' : 'Concluir Lição' }}
-        </v-btn>-->
       </v-col>
     </v-row>
+    <!-- Footer -->
     <LessonFooter
+      :goToCourseAfterUnit="goToCourseAfterUnit"
       :isCompleted="isCompleted"
       :isUnitFinished="isUnitFinished"
       :nextTitle="nextLessonTitle"
       :nextLesson="nextLesson"
+      :rating="userRating"
       @next="handleNextLesson"
+      @rating="handleRating"
     />
   </v-container>
 </template>
@@ -175,13 +168,11 @@ const lessonStore = useLessonStore()
 const courseStore = useCourseStore()
 
 const lessonId = computed(() => Number(route.params.lessonId))
-//const unitId = computed(() => progressStore.getUnitIdByLessonId(lessonId))
 
 const { lessonDetails } = storeToRefs(lessonStore)
 const lessonType = computed(() => lessonDetails.value?.content_type)
 const isCompleted = computed(() => progressStore.getLessonById(lessonId.value)?.is_completed === 1)
 
-const goBack = () => router.back()
 const markAsCompleted = async () => {
   if (!isCompleted.value) await lessonStore.completeLesson(lessonId.value)
 }
@@ -215,17 +206,41 @@ const handleStorylineProgress = (event) => {
 }
 
 // Estado para footer
+const goToCourseAfterUnit = false // mudar para true se quiser voltar à /course
 const nextLesson = ref(null)
 const isUnitFinished = ref(false)
-const isFinished = ref(false)
 const userRating = ref(0)
 const nextLessonTitle = computed(() => nextLesson.value?.title || '')
+
+// Inicializa o estado com os dados da próxima lição
+async function handleRating(rating) {
+  userRating.value = rating // Atualiza valor local imediato
+  // Envia o rating para o backend
+  await lessonStore.rateLesson(lessonId.value, rating)
+  // Força atualização no estado reativo local (store)
+  const index = lessonStore.lessons.findIndex((l) => l.id === lessonId.value)
+  if (index !== -1) {
+    lessonStore.lessons[index].rating = rating
+  }
+  // Garante que o componente continue sincronizado
+  userRating.value = rating
+}
 
 // Handler do botão próximo
 function handleNextLesson() {
   console.log('Avançando para a lição:', nextLesson.value)
+
   if (isUnitFinished.value) {
-    router.push('/course')
+    if (goToCourseAfterUnit) {
+      router.push('/course')
+    } else {
+      const nextUnitFirstLesson = progressStore.getNextUnitFirstLesson(lessonId.value)
+      if (nextUnitFirstLesson) {
+        router.push(`/lesson/${nextUnitFirstLesson.id}`)
+      } else {
+        router.push('/course') // fallback
+      }
+    }
   } else if (nextLesson.value?.id) {
     router.push(`/lesson/${nextLesson.value.id}`)
   }
@@ -260,6 +275,8 @@ watch(
     let lesson = lessonDetails.value
     if (!lesson || lesson.id !== lessonId) {
       lesson = await lessonStore.fetchLessonDetails(unitId, id)
+      console.log('Lesson atualizada:', lesson)
+      userRating.value = lesson?.rating || 0
     }
 
     // Busca todas as lições da unidade
@@ -284,9 +301,28 @@ watch(
       }
       isUnitFinished.value = false
     } else {
-      // Se não houver próxima lição, marca unidade como concluída
-      nextLesson.value = null
-      isUnitFinished.value = true
+      // Procurar próxima unidade com lições
+      const nextUnitId = progressStore.getNextUnitId(unitId)
+      if (nextUnitId) {
+        const nextUnitLessons = lessonStore.lessons
+          .filter((l) => l.unit_id === nextUnitId)
+          .sort((a, b) => a.order_index - b.order_index)
+
+        const firstLesson = nextUnitLessons[0]
+        if (firstLesson) {
+          nextLesson.value = {
+            title: firstLesson.title,
+            id: firstLesson.id,
+          }
+          isUnitFinished.value = true // ainda true pois mudamos de unidade
+        } else {
+          nextLesson.value = null
+          isUnitFinished.value = true
+        }
+      } else {
+        nextLesson.value = null
+        isUnitFinished.value = true
+      }
     }
 
     if (lesson.content_type === 'vimeo') {

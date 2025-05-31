@@ -83,6 +83,16 @@ export const useLessonStore = defineStore(
       }
     }
 
+    // Avaliza uma lição
+    async function rateLesson(lessonId, rating) {
+      try {
+        await api.patch(`/lessons/${lessonId}/rating`, { rating })
+        console.log('Rating enviado com sucesso:', rating)
+      } catch (err) {
+        console.error('Erro ao enviar rating:', err)
+      }
+    }
+
     // Carrega as lições de múltiplas unidades desbloqueadas
     // - Usa Promise.all para buscar em paralelo
     // - Junta os resultados em um único array (flatten) para exibir badges e lições em ordem global
@@ -118,6 +128,7 @@ export const useLessonStore = defineStore(
       fetchLessons,
       fetchLessonDetails,
       completeLesson,
+      rateLesson,
       preloadLessonsForUnits,
     }
   },

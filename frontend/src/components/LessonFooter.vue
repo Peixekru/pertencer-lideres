@@ -14,8 +14,8 @@
         class="px-4 py-2 d-flex align-center right-radios"
       >
         <v-rating
-          :model-value="2"
-          @update:modelValue="$emit('update:userRating', $event)"
+          :model-value="rating"
+          @update:modelValue="$emit('rating', $event)"
           length="5"
         >
           <template #item="{ isFilled }">
@@ -41,9 +41,10 @@
           size="small"
           rounded="xl"
           height="32"
+          :active="false"
           @click="$emit('next')"
         >
-          {{ isUnitFinished ? 'PÁGINA INICIAL' : 'PROSSEGUIR' }}
+          {{ isUnitFinished && goToCourseAfterUnit ? 'Finalizar' : 'Prosseguir' }}
         </v-btn>
       </div>
     </v-container>
@@ -57,15 +58,16 @@ import IconStarFilled from '@/components/icons/IconStarFilled.vue'
 
 // Props
 const props = defineProps({
+  goToCourseAfterUnit: Boolean,
   isCompleted: Boolean,
   isUnitFinished: Boolean,
-  //userRating: Number,
+  rating: Number,
   nextTitle: String,
 })
 
-console.log('isCompleted prop:', props.isCompleted)
+const emit = defineEmits(['next', 'rating'])
 
-const emit = defineEmits(['next', 'update:userRating'])
+//console.log('isCompleted prop:', props.isCompleted)
 
 // Tema
 const { current } = useTheme()

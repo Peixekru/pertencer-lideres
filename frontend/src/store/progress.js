@@ -64,6 +64,30 @@ export const useProgressStore = defineStore(
       }
     }
 
+    // Retorna a primeira lição da próxima unidade, dado um lessonId
+    function getNextUnitFirstLesson(lessonId) {
+      const currentUnitId = getUnitIdByLessonId(lessonId)
+      if (!currentUnitId) return null
+
+      const units = [...unitsWithProgress.value]
+      const currentIndex = units.findIndex((u) => u.id === currentUnitId)
+      if (currentIndex === -1 || currentIndex + 1 >= units.length) return null
+
+      const nextUnit = units[currentIndex + 1]
+      const firstLesson = nextUnit.lessons?.[0]
+
+      return firstLesson || null
+    }
+
+    // Retora a proxima unidade a partir do ID da unidade atual
+    function getNextUnitId(currentUnitId) {
+      const units = [...unitsWithProgress.value]
+      const currentIndex = units.findIndex((u) => u.id === currentUnitId)
+      if (currentIndex === -1 || currentIndex + 1 >= units.length) return null
+
+      return units[currentIndex + 1].id
+    }
+
     // Utilitários internos
     function startLoading() {
       loading.value = true
@@ -88,6 +112,8 @@ export const useProgressStore = defineStore(
       fetchCourseProgress,
       getLessonById,
       getUnitIdByLessonId,
+      getNextUnitFirstLesson,
+      getNextUnitId,
     }
   },
   {

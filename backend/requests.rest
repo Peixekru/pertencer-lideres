@@ -4,7 +4,7 @@
 
 # Rodrigo_001 / Rui_0000001
 
-POST http://localhost:3001/api/users
+POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
@@ -93,7 +93,7 @@ Content-Type: application/json
 //Authorization: Bearer {{token}}
 
 ### Buscar unidades do curso do usuário
-GET http://localhost:3001/api/lessons/12
+GET http://localhost:3000/api/lessons/12
 Content-Type: application/json
 //Authorization: Bearer {{token}}
 
@@ -119,6 +119,16 @@ Content-Type: application/json
 {
   "userId": 2
 }
+
+### Atualiza a avaliação da lição
+PATCH http://localhost:3000/api/lessons/41/rating
+Content-Type: application/json
+
+{
+  "rating": 5
+}
+
+
 
 ### Atualizar configurações de user_course_settings (merge no config)
 PUT http://localhost:3000/api/settings/2

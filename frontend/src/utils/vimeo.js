@@ -1,11 +1,18 @@
 import { nextTick } from 'vue'
 
-// Garante que a API do Vimeo seja carregada apenas uma vez.
-// Reutiliza a mesma Promise em chamadas subsequentes, evitando múltiplos <script>.
+/**
+ * Promise única para garantir que a API do Vimeo seja carregada apenas uma vez.
+ * Evita múltiplos `<script>` injetados no DOM em cenários de SPA com navegação dinâmica.
+ */
 let vimeoScriptPromise = null
 
 /**
- * Carrega a API do Vimeo uma única vez.
+ * Carrega dinamicamente o script da API do Vimeo (player.js).
+ *
+ * Reutiliza uma Promise singleton (`vimeoScriptPromise`) para garantir carregamento único.
+ * Retorna a Promise que será resolvida assim que o script for carregado com sucesso.
+ *
+ * @returns {Promise<void>} Promise resolvida após a API ser carregada
  */
 function loadVimeoAPI() {
   if (vimeoScriptPromise) return vimeoScriptPromise
@@ -23,10 +30,17 @@ function loadVimeoAPI() {
 }
 
 /**
- * Instancia player do Vimeo para cada iframe encontrado e escuta evento 'ended'.
- * Usa DOM direto para garantir que o player seja carregado corretamente mesmo após navegação SPA.
+ * Inicializa o(s) player(s) do Vimeo presentes na página e escuta o evento 'ended'.
  *
- * @param {Function} onEnd - Função callback chamada ao final do vídeo
+ * - Aguarda o carregamento da API oficial do Vimeo (player.js)
+ * - Busca todos os `<iframe>` com `src*="player.vimeo.com"`
+ * - Instancia um player para cada iframe
+ * - Registra um listener para o evento `ended`, chamando o callback `onEnd`
+ *
+ * Essa função é ideal para ambientes SPA onde os iframes são carregados dinamicamente
+ * e a API precisa ser reaplicada a cada montagem de componente.
+ *
+ * @param {Function} onEnd - Callback executado quando o vídeo chega ao fim
  */
 export async function initVimeoPlayer(onEnd) {
   await loadVimeoAPI()
@@ -35,7 +49,7 @@ export async function initVimeoPlayer(onEnd) {
   const vimeoIframes = document.querySelectorAll('iframe[src*="player.vimeo.com"]')
 
   if (!vimeoIframes.length) {
-    console.warn('Nenhum iframe do Vimeo encontrado no DOM')
+    console.warn('[initVimeoPlayer] Nenhum iframe do Vimeo encontrado no DOM')
     return
   }
 
@@ -45,14 +59,14 @@ export async function initVimeoPlayer(onEnd) {
     player
       .ready()
       .then(() => {
-        console.log(`Player Vimeo #${index + 1} pronto`)
+        console.log(`[initVimeoPlayer] Player Vimeo #${index + 1} pronto`)
       })
       .catch((err) => {
-        console.error('Erro ao preparar player Vimeo:', err)
+        console.error('[initVimeoPlayer] Erro ao preparar player Vimeo:', err)
       })
 
     player.on('ended', () => {
-      console.log('Vimeo chegou ao fim do vídeo')
+      console.log(`[initVimeoPlayer] Player Vimeo #${index + 1} chegou ao fim`)
       onEnd?.()
     })
   })

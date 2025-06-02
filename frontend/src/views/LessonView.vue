@@ -12,7 +12,7 @@
         cols="12"
         md="12"
       >
-        <!-- Título da lição -->
+        <!-- Cabeçalho da lição -->
         <v-row no-gutters>
           <v-col cols="auto">
             <h1 class="text-h1-70 font-weight-medium text-primary">01</h1>
@@ -40,106 +40,26 @@
           </v-col>
         </v-row>
 
-        <!-- Conteúdo da lição -->
+        <!-- Componente que renderiza o player específico da lição -->
         <v-container
           class="pa-0 mt-6"
           v-if="lessonDetails"
         >
-          <!-- Tipo Vídeo -->
-          <template v-if="lessonType === 'video'">
-            <v-responsive
-              :aspect-ratio="16 / 9"
-              class="rounded-lg overflow-hidden elevation-4"
-            >
-              <video
-                ref="videoRef"
-                :src="getUrl(lessonDetails.content_url)"
-                autoplay
-                muted
-                controls
-                class="w-100 h-100 d-block"
-              />
-            </v-responsive>
-          </template>
-
-          <!-- Tipo Vimeo -->
-          <template v-else-if="lessonType === 'vimeo'">
-            <v-responsive
-              :aspect-ratio="16 / 9"
-              class="rounded-lg overflow-hidden elevation-4"
-            >
-              <iframe
-                :src="lessonDetails.content_url"
-                title="Conteúdo vimeo"
-                allow="autoplay; fullscreen; picture-in-picture"
-                frameborder="0"
-                allowfullscreen
-                class="w-100 h-100 d-block"
-              />
-            </v-responsive>
-          </template>
-
-          <!-- Tipo Rise -->
-          <template v-else-if="lessonType === 'rise'">
-            <v-sheet
-              elevation="6"
-              class="iframe-fixed iframe-centered"
-              :class="isFullscreen ? 'fullscreen w-100' : 'layout-max-width mt-40'"
-            >
-              <!-- Botão Fullscreen -->
-              <v-btn
-                icon
-                elevation="6"
-                size="small"
-                class="position-absolute"
-                style="right: 12px; z-index: 10"
-                :style="isFullscreen ? 'top: 10px;' : 'top: -20px;'"
-                @click="toggleFullscreen"
-                :aria-label="isFullscreen ? 'Sair do modo tela cheia' : 'Expandir para tela cheia'"
-              >
-                <v-icon color="primary">
-                  {{ isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}
-                </v-icon>
-              </v-btn>
-
-              <iframe
-                :src="getUrl(lessonDetails.content_url)"
-                class="w-100 border-0"
-                :class="isFullscreen ? 'h-100' : 'h-100-mt-40'"
-                title="Conteúdo rise"
-              />
-            </v-sheet>
-          </template>
-
-          <!-- Tipo Storyline -->
-          <template v-else-if="lessonType === 'storyline'">
-            <v-responsive
-              :aspect-ratio="16 / 9"
-              class="rounded-lg overflow-hidden elevation-4"
-            >
-              <iframe
-                :src="getUrl(lessonDetails.content_url)"
-                title="Conteúdo storyline"
-                frameborder="0"
-                class="w-100 h-100 d-block"
-              />
-            </v-responsive>
-          </template>
-
-          <!-- Tipo inválido -->
-          <template v-else>
-            <p>Tipo de conteúdo não suportado.</p>
-          </template>
+          <LessonPlayer
+            :lesson="lessonDetails"
+            @completed="handleCompleted"
+          />
         </v-container>
       </v-col>
     </v-row>
-    <!-- Footer -->
+
+    <!-- Footer com navegação e avaliação -->
     <LessonFooter
       :goToCourseAfterUnit="goToCourseAfterUnit"
-      :isCompleted="isCompleted"
-      :isUnitFinished="isUnitFinished"
+      :isUnitFinished="progressStore.isUnitFinished"
+      :nextLesson="progressStore.nextLesson"
       :nextTitle="nextLessonTitle"
-      :nextLesson="nextLesson"
+      :isCompleted="isCompleted"
       :rating="userRating"
       @next="handleNextLesson"
       @rating="handleRating"
@@ -148,89 +68,63 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+/**
+ * LessonView.vue
+ *
+ * Página principal que renderiza a lição atual.
+ * Define o título, renderiza o player dinâmico, e controla:
+ * - Progresso do curso
+ * - Navegação entre lições
+ * - Avaliação da lição (Rating)
+ */
+
+// Imports
+import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useProgressStore } from '@/store/progress'
 import { useLessonStore } from '@/store/lesson'
 import { useCourseStore } from '@/store/course'
-import { initVimeoPlayer } from '@/utils/vimeo'
-import { getUrl } from '@/utils/url'
+import LessonPlayer from '@/components/lessonPlayer/LessonPlayer.vue'
 import LessonFooter from '@/components/LessonFooter.vue'
-import logger from '#logger'
 
+// Roteamento e stores
 const route = useRoute()
 const router = useRouter()
-const videoRef = ref(null)
-
 const progressStore = useProgressStore()
 const lessonStore = useLessonStore()
 const courseStore = useCourseStore()
 
+// Dados da lição atual
 const lessonId = computed(() => Number(route.params.lessonId))
-
 const { lessonDetails } = storeToRefs(lessonStore)
-const lessonType = computed(() => lessonDetails.value?.content_type)
 const isCompleted = computed(() => progressStore.getLessonById(lessonId.value)?.is_completed === 1)
 
-const markAsCompleted = async () => {
-  if (!isCompleted.value) await lessonStore.completeLesson(lessonId.value)
-}
-
-// Lógica de tela cheia Rise
-const isFullscreen = ref(false)
-const toggleFullscreen = () => {
-  isFullscreen.value = !isFullscreen.value
-}
-
-// Lógica de captura de progresso Rise
-const handleRiseProgress = (event) => {
-  const data = event.data
-  if (data?.type === 'update' && data.payload?.totalProgress?.percentComplete === 100) {
-    logger.stInf('Lesson progress:', `${data.payload.totalProgress.percentComplete}% complete`)
-    markAsCompleted()
-  }
-}
-
-// Lógica de captura de progresso Storyline
-const handleStorylineProgress = (event) => {
-  const data = event.data
-  if (data?.type === 'SCORM_PROGRESS') {
-    const status = data.payload['cmi.core.lesson_status']
-    logger.stDeb('Storyline SCORM progress:', status)
-
-    if (status === 'completed' || status === 'passed') {
-      markAsCompleted()
-    }
-  }
-}
-
-// Estado para footer
-const goToCourseAfterUnit = false // mudar para true se quiser voltar à /course
-const nextLesson = ref(null)
-const isUnitFinished = ref(false)
+// Avaliação do usuário
 const userRating = ref(0)
-const nextLessonTitle = computed(() => nextLesson.value?.title || '')
 
-// Inicializa o estado com os dados da próxima lição
+// Envia avaliação do usuário para a lição atual
 async function handleRating(rating) {
-  userRating.value = rating // Atualiza valor local imediato
-  // Envia o rating para o backend
-  await lessonStore.rateLesson(lessonId.value, rating)
-  // Força atualização no estado reativo local (store)
-  const index = lessonStore.lessons.findIndex((l) => l.id === lessonId.value)
-  if (index !== -1) {
-    lessonStore.lessons[index].rating = rating
-  }
-  // Garante que o componente continue sincronizado
   userRating.value = rating
+  await lessonStore.rateLesson(lessonId.value, rating)
+  const index = lessonStore.lessons.findIndex((l) => l.id === lessonId.value)
+  if (index !== -1) lessonStore.lessons[index].rating = rating
 }
 
-// Handler do botão próximo
-function handleNextLesson() {
-  console.log('Avançando para a lição:', nextLesson.value)
+// Marca a lição como completa
+function handleCompleted() {
+  progressStore.completeLessonAndRefresh(lessonId.value)
+}
 
-  if (isUnitFinished.value) {
+// Configuração de navegação
+const goToCourseAfterUnit = false
+const nextLessonTitle = computed(() => progressStore.nextLesson?.title || '')
+
+// Avança para a próxima lição ou unidade
+function handleNextLesson() {
+  console.log('Avançando para a lição:', progressStore.nextLesson)
+
+  if (progressStore.isUnitFinished) {
     if (goToCourseAfterUnit) {
       router.push('/course')
     } else {
@@ -241,120 +135,40 @@ function handleNextLesson() {
         router.push('/course') // fallback
       }
     }
-  } else if (nextLesson.value?.id) {
-    router.push(`/lesson/${nextLesson.value.id}`)
+  } else if (progressStore.nextLesson?.id) {
+    router.push(`/lesson/${progressStore.nextLesson.id}`)
   }
 }
 
-/**
- * Observa mudança de lessonId (navegação entre lições)
- * - Garante carregamento do conteúdo correto
- * - Ativa o listener apropriado conforme o tipo de lição
- */
+// Watcher: Reage à mudança de ID na rota para carregar os dados da nova lição
 watch(
   () => lessonId.value,
   async (id, _, onCleanup) => {
     if (!id) return
 
-    // Garante que o progresso do curso esteja carregado
+    // Carrega progresso do curso se ainda não tiver
     if (!progressStore.progressData) {
       const courseId = courseStore.currentCourse?.id
       if (courseId) await progressStore.fetchCourseProgress(courseId)
     }
 
-    // Busca o ID da unidade com base na lessonId atual
     const unitId = progressStore.getUnitIdByLessonId(id)
+    if (!unitId) return
 
-    // Verifica se conseguiu identificar a unidade
-    if (!unitId) {
-      console.warn('UnitId não encontrado para lessonId:', id)
-      return
-    }
-
-    // Garante que os detalhes da lição atual estejam carregados
+    // Carrega detalhes e lista de lições
     let lesson = lessonDetails.value
-    if (!lesson || lesson.id !== lessonId) {
+    if (!lesson || lesson.id !== id) {
       lesson = await lessonStore.fetchLessonDetails(unitId, id)
-      console.log('Lesson atualizada:', lesson)
       userRating.value = lesson?.rating || 0
     }
 
-    // Busca todas as lições da unidade
     await lessonStore.fetchLessons(unitId)
-
-    // Filtra as lições da unidade e ordena pelo índice de ordem
-    const lessons = lessonStore.lessons
-      .filter((l) => l.unit_id === unitId)
-      .sort((a, b) => a.order_index - b.order_index)
-
-    // Identifica o índice da lição atual na lista ordenada
-    const currentIndex = lessons.findIndex((l) => l.id === id)
-
-    // Obtém a próxima lição, se houver
-    const nextLessonData = lessons[currentIndex + 1]
-
-    // Atualiza o estado com os dados da próxima lição
-    if (nextLessonData) {
-      nextLesson.value = {
-        title: nextLessonData.title,
-        id: nextLessonData.id,
-      }
-      isUnitFinished.value = false
-    } else {
-      // Procurar próxima unidade com lições
-      const nextUnitId = progressStore.getNextUnitId(unitId)
-      if (nextUnitId) {
-        const nextUnitLessons = lessonStore.lessons
-          .filter((l) => l.unit_id === nextUnitId)
-          .sort((a, b) => a.order_index - b.order_index)
-
-        const firstLesson = nextUnitLessons[0]
-        if (firstLesson) {
-          nextLesson.value = {
-            title: firstLesson.title,
-            id: firstLesson.id,
-          }
-          isUnitFinished.value = true // ainda true pois mudamos de unidade
-        } else {
-          nextLesson.value = null
-          isUnitFinished.value = true
-        }
-      } else {
-        nextLesson.value = null
-        isUnitFinished.value = true
-      }
-    }
-
-    if (lesson.content_type === 'vimeo') {
-      /**
-       * Inicializa player do Vimeo e escuta evento de conclusão.
-       * Utiliza abordagem direta via DOM (como no projeto legado).
-       * Evita uso de refs e problemas de reatividade/navegação.
-       */
-      await initVimeoPlayer(() => markAsCompleted())
-    }
-
-    if (lesson?.content_type === 'video') {
-      await nextTick()
-      const video = videoRef.value
-      if (video && !isCompleted.value) {
-        video.addEventListener('ended', markAsCompleted)
-        onCleanup(() => video.removeEventListener('ended', markAsCompleted))
-      }
-    }
-
-    if (lesson?.content_type === 'rise') {
-      window.addEventListener('message', handleRiseProgress)
-      onCleanup(() => window.removeEventListener('message', handleRiseProgress))
-    }
-
-    if (lesson?.content_type === 'storyline') {
-      window.addEventListener('message', handleStorylineProgress)
-      onCleanup(() => window.removeEventListener('message', handleStorylineProgress))
-    }
+    progressStore.calculateFlow(id)
   },
   { immediate: true }
 )
+
+// Carrega progresso do curso ao montar a view (caso ainda não carregado)
 
 onMounted(async () => {
   if (!progressStore.progressData) {
@@ -363,13 +177,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style lang="scss" scoped>
-// Alinhamento da tela cheia Rise
-.mt-40 {
-  margin-top: 160px;
-}
-.h-100-mt-40 {
-  height: calc(100% - 160px);
-}
-</style>

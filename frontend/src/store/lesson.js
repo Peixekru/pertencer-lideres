@@ -10,12 +10,10 @@
  * - Assume que authStore e courseStore estão prontos no contexto
  */
 
-import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import api from '@/composables/useApi'
-import { useProgressStore } from './progress'
+import { defineStore } from 'pinia'
 import { useAuthStore } from './auth'
-import { useCourseStore } from './course'
+import api from '@/composables/useApi'
 
 export const useLessonStore = defineStore(
   'lesson',
@@ -66,16 +64,12 @@ export const useLessonStore = defineStore(
     // Marca uma lição como concluída e atualiza progresso
     async function completeLesson(lessonId) {
       try {
+        // Utiliza a store de autenticação para obter o ID do usuário
         const authStore = useAuthStore()
-        const progressStore = useProgressStore()
-        const courseStore = useCourseStore()
-
         const userId = authStore.user?.id
-        const courseId = courseStore.currentCourse?.id
-
+        // Atualiza a lição recebida com o id do usuário
         await api.post(`/lessons/${lessonId}/complete`, { userId })
-        await progressStore.fetchCourseProgress(courseId)
-
+        // retorna true se a atualização for bem-sucedida
         return true
       } catch (err) {
         handleError(err)

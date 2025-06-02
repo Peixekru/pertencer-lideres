@@ -13,6 +13,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAuthStore } from './auth'
 import api from '@/composables/useApi'
+import { useCourseStore } from '@/store/course'
+import { useLessonStore } from '@/store/lesson'
 
 export const useProgressStore = defineStore(
   'progress',
@@ -21,8 +23,13 @@ export const useProgressStore = defineStore(
     const progressData = ref(null)
     const loading = ref(false)
     const error = ref(null)
+    const _nextLesson = ref(null)
+    const _isUnitFinished = ref(false)
 
     // Getters
+
+    const nextLesson = computed(() => _nextLesson.value)
+    const isUnitFinished = computed(() => _isUnitFinished.value)
 
     // Retorna o progresso total do curso em %
     const courseProgress = computed(() => progressData.value?.course_progress || 0)
@@ -88,6 +95,59 @@ export const useProgressStore = defineStore(
       return units[currentIndex + 1].id
     }
 
+    async function completeLessonAndRefresh(lessonId) {
+      const courseStore = useCourseStore()
+      const lessonStore = useLessonStore()
+      const courseId = courseStore.currentCourse?.id
+
+      if (!courseId) {
+        console.warn('Curso não encontrado ao tentar concluir lição')
+        return
+      }
+
+      try {
+        const success = await lessonStore.completeLesson(lessonId)
+        if (success) {
+          await fetchCourseProgress(courseId)
+          calculateFlow(lessonId) // Chama internamente após atualizar o progresso
+        }
+      } catch (err) {
+        console.error('Erro ao concluir lição e atualizar progresso:', err)
+      }
+    }
+
+    // Calcula o fluxo de lições e unidades
+    function calculateFlow(currentLessonId) {
+      const lessonStore = useLessonStore()
+      const unitId = getUnitIdByLessonId(currentLessonId)
+      if (!unitId) {
+        _nextLesson.value = null
+        _isUnitFinished.value = false
+        return { nextLesson: null, isUnitFinished: false }
+      }
+
+      const lessons = lessonStore.lessons.slice().sort((a, b) => a.order_index - b.order_index)
+      const currentLessons = lessons.filter((l) => l.unit_id === unitId)
+      const currentIndex = currentLessons.findIndex((l) => l.id === currentLessonId)
+      const next = currentLessons[currentIndex + 1]
+
+      if (next) {
+        _nextLesson.value = { id: next.id, title: next.title }
+        _isUnitFinished.value = false
+      } else {
+        const nextUnitId = getNextUnitId(unitId)
+        const nextUnitLessons = lessons.filter((l) => l.unit_id === nextUnitId)
+        const first = nextUnitLessons[0]
+        _nextLesson.value = first ? { id: first.id, title: first.title } : null
+        _isUnitFinished.value = true
+      }
+
+      return {
+        nextLesson: _nextLesson.value,
+        isUnitFinished: _isUnitFinished.value,
+      }
+    }
+
     // Utilitários internos
     function startLoading() {
       loading.value = true
@@ -114,6 +174,10 @@ export const useProgressStore = defineStore(
       getUnitIdByLessonId,
       getNextUnitFirstLesson,
       getNextUnitId,
+      completeLessonAndRefresh,
+      calculateFlow,
+      nextLesson,
+      isUnitFinished,
     }
   },
   {

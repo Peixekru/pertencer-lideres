@@ -104,7 +104,7 @@ export const useProgressStore = defineStore(
         const success = await lessonStore.completeLesson(lessonId)
         if (success) {
           await fetchCourseProgress(courseId)
-          calculateFlow(lessonId) // Chama internamente após atualizar o progresso
+          //calculateFlow(lessonId) // Chama internamente após atualizar o progresso
         }
       } catch (err) {
         console.error('Erro ao concluir lição e atualizar progresso:', err)

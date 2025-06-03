@@ -20,7 +20,7 @@
       </v-icon>
     </v-btn>
 
-    <!-- 🌐 Iframe do conteúdo Rise -->
+    <!-- Iframe do conteúdo Rise -->
     <iframe
       :src="getUrl(lesson.content_url)"
       class="w-100 border-0"

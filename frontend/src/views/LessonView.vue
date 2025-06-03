@@ -24,7 +24,7 @@
               align="center"
             >
               <h4 class="text-h4-20 text-primary mt-1">
-                {{ lessonDetails?.title || 'Lição não encontrada' }}
+                {{ unit?.title || 'Unidade não encontrada' }}
               </h4>
               <span class="text-overline text-primary ms-4 mt-3">(ID: {{ lessonId }})</span>
               <v-icon
@@ -36,11 +36,11 @@
                 mdi-check-circle
               </v-icon>
             </v-row>
-            <p class="mt-1 text-primary">Título da lição</p>
+            <p class="mt-1 text-primary">{{ lessonDetails?.title || 'Lição não encontrada' }}</p>
           </v-col>
         </v-row>
 
-        <!-- Componente que renderiza o player específico da lição -->
+        <!-- Roteador de players específicos das lição -->
         <v-container
           class="pa-0 mt-6"
           v-if="lessonDetails"
@@ -84,9 +84,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useProgressStore } from '@/store/progress'
 import { useLessonStore } from '@/store/lesson'
 import { useCourseStore } from '@/store/course'
+import { resolveNextLessonFromMapped } from '@/domain/lesson/resolveNextLessonFromMapped'
 import LessonPlayer from '@/components/lessonPlayer/LessonPlayer.vue'
 import LessonFooter from '@/components/LessonFooter.vue'
-import { resolveNextLessonFromMapped } from '@/domain/lesson/resolveNextLessonFromMapped'
 
 // Roteamento e stores
 const route = useRoute()
@@ -99,6 +99,12 @@ const courseStore = useCourseStore()
 const lessonId = computed(() => Number(route.params.lessonId))
 const { lessonDetails } = storeToRefs(lessonStore)
 const isCompleted = computed(() => progressStore.getLessonById(lessonId.value)?.is_completed === 1)
+
+// Dados da unidade atual
+const unitId = computed(() => progressStore.getUnitIdByLessonId(lessonId.value))
+const unit = computed(() =>
+  unitId.value ? progressStore.getUnitProgressById(unitId.value) : undefined
+)
 
 // Avaliação do usuário
 const userRating = ref(0)
@@ -127,7 +133,7 @@ function handleCompleted() {
  * - true: encerra na unidade atual e redireciona para /course
  * - false: continua para a próxima lição desbloqueada (mesmo de outra unidade)
  */
-const goToCourseAfterUnit = true
+const goToCourseAfterUnit = false
 
 /**
  * Lição seguinte desbloqueada com base na lição atual e no modo de navegação.

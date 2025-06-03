@@ -125,15 +125,17 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useProgressStore } from '@/store/progress'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/store/auth'
 import { useSettingsStore } from '@/store/settings'
 import { useBeepSound } from '@/utils/sounds'
 import logger from '#logger'
 
-// Inicializa os stores e efeitos sonoros
+// Inicializa os stores
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
+const progressStore = useProgressStore()
 
 // Acesso à rota atual
 const route = useRoute()
@@ -153,8 +155,27 @@ const handleScroll = () => {
   showBackground.value = !isCourseView.value || window.scrollY > 60
 }
 
-// Função para voltar à página anterior
-const goBack = () => router.back()
+// Tabela de rotas de navegação reversa, usada para determinar onde "voltar" com base na rota atual
+const backNavigation = {
+  // Se estiver na rota 'Lesson', volta para a lista de lições da unidade correspondente
+  Lesson: () => {
+    // Recupera o ID da unidade com base no ID da lição atual
+    const unitId = progressStore.getUnitIdByLessonId(Number(route.params.lessonId))
+    // Navega para a rota 'Lessons', passando o ID da unidade como parâmetro
+    router.push({ name: 'Lessons', params: { unitId } })
+  },
+
+  // Se estiver na rota 'Lessons', volta para a rota principal do curso
+  Lessons: () => router.push({ name: 'Course' }),
+}
+
+// Função chamada para executar a navegação reversa
+const goBack = () => {
+  // Obtém o nome da rota atual e verifica se há um manipulador específico na tabela
+  const handler = backNavigation[route.name]
+  // Se existir um manipulador definido, executa; caso contrário, usa o comportamento padrão de voltar no histórico
+  handler ? handler() : router.back()
+}
 
 // Sai da conta
 const handleLogout = () => {

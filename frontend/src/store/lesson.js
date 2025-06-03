@@ -14,6 +14,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { useAuthStore } from './auth'
 import api from '@/composables/useApi'
+import { mapLessonsWithLockState } from '@/domain/lesson/mapLessonsWithLockState'
 
 export const useLessonStore = defineStore(
   'lesson',
@@ -59,6 +60,31 @@ export const useLessonStore = defineStore(
       } finally {
         stopLoading()
       }
+    }
+
+    /**
+     * Retorna a próxima lição desbloqueada com base na atual.
+     *
+     * - Utiliza a lista de lições carregadas e mapeadas com bloqueio.
+     * - Baseado na ordenação por `order_index`.
+     * - Retorna `null` se nenhuma próxima lição estiver disponível ou desbloqueada.
+     *
+     * @param currentLessonId ID da lição atual
+     * @returns Lição desbloqueada seguinte ou `null`
+     */
+    function getNextUnlockedLesson(currentLessonId) {
+      const mapped = mapLessonsWithLockState(lessons.value)
+      const currentIndex = mapped.findIndex((l) => l.id === currentLessonId)
+
+      if (currentIndex === -1) return null
+
+      for (let i = currentIndex + 1; i < mapped.length; i++) {
+        if (!mapped[i].isLocked) {
+          return mapped[i]
+        }
+      }
+
+      return null
     }
 
     // Marca uma lição como concluída e atualiza progresso
@@ -124,6 +150,7 @@ export const useLessonStore = defineStore(
       completeLesson,
       rateLesson,
       preloadLessonsForUnits,
+      getNextUnlockedLesson,
     }
   },
   {

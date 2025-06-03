@@ -8,7 +8,7 @@
       fluid
       class="d-flex align-center justify-space-between ps-0"
     >
-      <!-- Avaliação -->
+      <!-- Avaliação (Rating) -->
       <v-sheet
         elevation="2"
         class="px-4 py-2 d-flex align-center right-radios"
@@ -18,6 +18,7 @@
           @update:modelValue="$emit('rating', $event)"
           length="5"
         >
+          <!-- Customização do ícone da estrela -->
           <template #item="{ isFilled }">
             <IconStarFilled
               :fill="isFilled ? primary : info"
@@ -27,7 +28,7 @@
         </v-rating>
       </v-sheet>
 
-      <!-- Próxima lição + botão -->
+      <!-- Exibição da próxima lição e botão de navegação -->
       <div class="d-flex align-center">
         <div class="text-end me-6">
           <div class="text-caption text-accent">Próximo conteúdo:</div>
@@ -36,6 +37,7 @@
           </div>
         </div>
 
+        <!-- Botão de avançar -->
         <v-btn
           class="bg-primary"
           size="small"
@@ -52,24 +54,34 @@
 </template>
 
 <script setup>
+/**
+ * LessonFooter.vue
+ *
+ * Componente fixo no rodapé da lição.
+ * Responsável por:
+ * - Exibir avaliação por estrelas (v-rating)
+ * - Mostrar título da próxima lição
+ * - Emissão de evento para avançar ("next")
+ * - Customização de fluxo com base em `goToCourseAfterUnit`
+ */
+
 import { computed } from 'vue'
 import { useTheme } from 'vuetify'
 import IconStarFilled from '@/components/icons/IconStarFilled.vue'
 
-// Props
+// Props esperadas do componente pai
 const props = defineProps({
-  goToCourseAfterUnit: Boolean,
-  isCompleted: Boolean,
-  isUnitFinished: Boolean,
-  rating: Number,
-  nextTitle: String,
+  goToCourseAfterUnit: Boolean, // Se true, o botão leva ao curso após a unidade
+  isCompleted: Boolean, // Controla a visibilidade do footer
+  isUnitFinished: Boolean, // Informa se a unidade chegou ao fim
+  rating: Number, // Avaliação atual do usuário
+  nextTitle: String, // Título da próxima lição
 })
 
+// Eventos emitidos
 const emit = defineEmits(['next', 'rating'])
 
-//console.log('isCompleted prop:', props.isCompleted)
-
-// Tema
+// Tema atual da aplicação (usado para colorir as estrelas)
 const { current } = useTheme()
 const primary = computed(() => current.value.colors.primary)
 const info = computed(() => current.value.colors.info)

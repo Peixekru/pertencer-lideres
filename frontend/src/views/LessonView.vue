@@ -56,9 +56,8 @@
     <!-- Footer com navegação e avaliação -->
     <LessonFooter
       :goToCourseAfterUnit="goToCourseAfterUnit"
-      :isUnitFinished="progressStore.isUnitFinished"
-      :nextLesson="progressStore.nextLesson"
-      :nextTitle="nextLessonTitle"
+      :nextLesson="nextLesson"
+      :nextTitle="nextLesson?.title || ''"
       :isCompleted="isCompleted"
       :rating="userRating"
       @next="handleNextLesson"
@@ -71,11 +70,11 @@
 /**
  * LessonView.vue
  *
- * Página principal que renderiza a lição atual.
- * Define o título, renderiza o player dinâmico, e controla:
- * - Progresso do curso
- * - Navegação entre lições
- * - Avaliação da lição (Rating)
+ * Página que exibe a lição atual.
+ * Responsável por:
+ * - Renderizar o conteúdo da lição
+ * - Controlar progresso e navegação
+ * - Gerenciar a avaliação (rating)
  */
 
 // Imports
@@ -87,6 +86,7 @@ import { useLessonStore } from '@/store/lesson'
 import { useCourseStore } from '@/store/course'
 import LessonPlayer from '@/components/lessonPlayer/LessonPlayer.vue'
 import LessonFooter from '@/components/LessonFooter.vue'
+import { resolveNextLessonFromMapped } from '@/domain/lesson/resolveNextLessonFromMapped'
 
 // Roteamento e stores
 const route = useRoute()
@@ -103,73 +103,107 @@ const isCompleted = computed(() => progressStore.getLessonById(lessonId.value)?.
 // Avaliação do usuário
 const userRating = ref(0)
 
-// Envia avaliação do usuário para a lição atual
+/**
+ * Envia a avaliação (rating) do usuário para a lição atual.
+ * Atualiza também a store local após envio ao backend.
+ */
 async function handleRating(rating) {
   userRating.value = rating
   await lessonStore.rateLesson(lessonId.value, rating)
+
   const index = lessonStore.lessons.findIndex((l) => l.id === lessonId.value)
   if (index !== -1) lessonStore.lessons[index].rating = rating
 }
 
-// Marca a lição como completa
+/**
+ * Marca a lição como concluída e atualiza o progresso do curso.
+ */
 function handleCompleted() {
   progressStore.completeLessonAndRefresh(lessonId.value)
 }
 
-// Configuração de navegação
-const goToCourseAfterUnit = false
-const nextLessonTitle = computed(() => progressStore.nextLesson?.title || '')
+/**
+ * Define o comportamento de navegação ao final da unidade.
+ * - true: encerra na unidade atual e redireciona para /course
+ * - false: continua para a próxima lição desbloqueada (mesmo de outra unidade)
+ */
+const goToCourseAfterUnit = true
 
-// Avança para a próxima lição ou unidade
+/**
+ * Lição seguinte desbloqueada com base na lição atual e no modo de navegação.
+ *
+ * - Usa regras de desbloqueio baseadas em conclusão anterior (via `resolveNextLessonFromMapped`)
+ * - Modo `"continuous"` avança linearmente entre unidades
+ * - Modo `"restricted"` limita o avanço à mesma unidade, redirecionando ao final
+ *
+ * O resultado controla a navegação via `handleNextLesson` e também alimenta o componente `LessonFooter`.
+ *
+ * @type {import('@/domain/lesson/mapLessonsWithLockState').MappedLesson | null}
+ */
+const nextLesson = computed(() =>
+  resolveNextLessonFromMapped(
+    lessonStore.lessons,
+    lessonId.value,
+    goToCourseAfterUnit ? 'restricted' : 'continuous'
+  )
+)
+
+/**
+ * Avança para a próxima lição desbloqueada ou redireciona para o curso.
+ * Baseado no valor computado de `nextLesson`.
+ */
 function handleNextLesson() {
-  console.log('Avançando para a lição:', progressStore.nextLesson)
-
-  if (progressStore.isUnitFinished) {
-    if (goToCourseAfterUnit) {
-      router.push('/course')
-    } else {
-      const nextUnitFirstLesson = progressStore.getNextUnitFirstLesson(lessonId.value)
-      if (nextUnitFirstLesson) {
-        router.push(`/lesson/${nextUnitFirstLesson.id}`)
-      } else {
-        router.push('/course') // fallback
-      }
-    }
-  } else if (progressStore.nextLesson?.id) {
-    router.push(`/lesson/${progressStore.nextLesson.id}`)
+  if (nextLesson.value) {
+    router.push({ name: 'Lesson', params: { lessonId: nextLesson.value.id } })
+  } else {
+    router.push('/course')
   }
 }
 
-// Watcher: Reage à mudança de ID na rota para carregar os dados da nova lição
+/**
+ * Watcher:
+ * Reage à mudança de rota (lessonId) para:
+ * - Garantir que progresso e dados estejam carregados
+ * - Buscar detalhes e lições da unidade
+ * - Atualizar avaliação local
+ * - Calcular fluxo de navegação
+ */
 watch(
   () => lessonId.value,
-  async (id, _, onCleanup) => {
+  async (id) => {
+    // Se não houver ID, sai da função
     if (!id) return
 
-    // Carrega progresso do curso se ainda não tiver
+    // Garante que o progresso do curso esteja carregado
     if (!progressStore.progressData) {
       const courseId = courseStore.currentCourse?.id
       if (courseId) await progressStore.fetchCourseProgress(courseId)
     }
 
+    // Recupera a unidade da lição
     const unitId = progressStore.getUnitIdByLessonId(id)
     if (!unitId) return
 
-    // Carrega detalhes e lista de lições
+    // Carrega os detalhes da lição se ainda não estiverem atualizados
     let lesson = lessonDetails.value
     if (!lesson || lesson.id !== id) {
       lesson = await lessonStore.fetchLessonDetails(unitId, id)
-      userRating.value = lesson?.rating || 0
     }
 
+    // Atualiza o rating local mesmo se o lessonDetails já estiver disponível
+    userRating.value = lesson?.rating || 0
+
+    // Garante que as lições da unidade estejam carregadas
     await lessonStore.fetchLessons(unitId)
-    progressStore.calculateFlow(id)
   },
+  // Configuração inicial: carrega imediatamente
   { immediate: true }
 )
 
-// Carrega progresso do curso ao montar a view (caso ainda não carregado)
-
+/**
+ * onMounted:
+ * Garante que o progresso do curso seja carregado ao montar a view
+ */
 onMounted(async () => {
   if (!progressStore.progressData) {
     const courseId = courseStore.currentCourse?.id

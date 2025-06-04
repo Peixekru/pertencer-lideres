@@ -1,3 +1,5 @@
+import { useLessonStore } from '@/store/lesson'
+
 /**
  * Mapeia uma lista de lições com informações de progresso, ordem e bloqueio.
  *
@@ -32,22 +34,33 @@ export type MappedLesson = {
   rating?: number
   isLocked: boolean
   unit_id?: number
+  image_url?: string
+  duration?: string
 }
 
 export function mapLessonsWithLockState(lessons: Lesson[]): MappedLesson[] {
   const sortedLessons = [...lessons].sort((a, b) => a.order_index - b.order_index)
+  const lessonStore = useLessonStore()
 
   return sortedLessons.map((lesson, index, all) => {
     const previous = all[index - 1]
     const isLocked = index > 0 && !previous?.is_completed
 
+    // Enriquecimento com dados completos da lição (ex: imagem e duração).
+    // Se a lição não estiver carregada na store, usamos um objeto vazio para evitar erro de acesso em campos opcionais.
+    const raw = lessonStore.getLessonById(lesson.id)
+    const fullLesson: Partial<Lesson> & { image_url?: string; duration?: string } = raw || {}
+
     return {
       id: lesson.id,
       title: lesson.title,
-      index: lesson.order_index,
+      index: fullLesson?.order_index ?? lesson.order_index, // garante consistência
       completed: lesson.is_completed,
-      rating: lesson.rating,
+      rating: fullLesson?.rating ?? lesson.rating, // se tiver rating mais atualizado
       isLocked,
+      unit_id: lesson.unit_id ?? fullLesson?.unit_id,
+      image_url: fullLesson?.image_url,
+      duration: fullLesson?.duration,
     }
   })
 }

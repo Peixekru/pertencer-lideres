@@ -6,7 +6,7 @@
     <!-- Título -->
     <h5 class="text-h4-20 text-primary mt-6 mb-6">
       Conteúdos dessa unidade:
-      <span class="text-overline ms-2">id: {{ unitId }}</span>
+      <!--<span class="text-overline ms-2">id: {{ unitId }}</span>-->
     </h5>
 
     <!-- Loading -->
@@ -24,33 +24,28 @@
       Nenhuma lição encontrada para esta unidade.
     </v-alert>
 
-    <!-- Lista de lições -->
-    <v-list
+    <!-- Grid de lições -->
+    <v-row
       v-if="lessons.length"
-      rounded="lg"
-      elevation="4"
-      class="pa-6"
+      dense
     >
-      <v-list-item
-        v-for="lesson in lessons"
+      <v-col
+        v-for="(lesson, i) in lessons"
         :key="lesson.id"
-        :disabled="lesson.isLocked"
-        :to="!lesson.isLocked ? { name: 'Lesson', params: { lessonId: lesson.id } } : undefined"
-        link
+        cols="12"
+        sm="6"
+        md="4"
+        lg="3"
+        class="d-flex py-6 px-3"
       >
-        <v-list-item-title>
-          {{ lesson.title }} (ID: {{ lesson.id }})
-          <v-icon
-            v-if="lesson.completed"
-            color="success"
-            size="sm"
-            class="ms-2"
-          >
-            mdi-check-circle
-          </v-icon>
-        </v-list-item-title>
-      </v-list-item>
-    </v-list>
+        <LessonCard
+          :lesson="lesson"
+          :index="i"
+          :highlight="!lesson.isLocked && !lesson.completed"
+          class="w-100"
+        />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -69,6 +64,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProgressStore } from '@/store/progress'
 import { mapLessonsWithLockState } from '@/domain/lesson/mapLessonsWithLockState'
+import LessonCard from '@/components/LessonCard.vue'
 
 const route = useRoute()
 const unitId = Number(route.params.unitId)

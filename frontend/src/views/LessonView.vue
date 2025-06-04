@@ -26,7 +26,7 @@
               <h4 class="text-h4-20 text-primary mt-1">
                 {{ unit?.title || 'Unidade não encontrada' }}
               </h4>
-              <span class="text-overline text-primary ms-4 mt-3">(ID: {{ lessonId }})</span>
+              <!--<span class="text-overline text-primary ms-4 mt-3">(ID: {{ lessonId }})</span>
               <v-icon
                 v-if="isCompleted"
                 size="16"
@@ -34,7 +34,7 @@
                 class="ms-2 mt-3"
               >
                 mdi-check-circle
-              </v-icon>
+              </v-icon>-->
             </v-row>
             <p class="mt-1 text-primary">{{ lessonDetails?.title || 'Lição não encontrada' }}</p>
           </v-col>

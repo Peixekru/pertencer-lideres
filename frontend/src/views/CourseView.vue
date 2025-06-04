@@ -96,10 +96,12 @@
     </v-container>
 
     <!-- Footer com logo -->
+    <!-- Separar a logo do footer: Uma par login e outra para o curso -->
+    <!--  :class="settingsStore.isDark && 'svg-filter--white'" -->
     <v-container class="text-center mt-auto mb-4">
       <v-img
         :src="footerLogoUrl"
-        :class="settingsStore.isDark && 'svg-filter--white'"
+        class="svg-filter--white"
         max-height="64"
         contain
         alt="Logo do rodapé"

@@ -62,6 +62,12 @@ export const useLessonStore = defineStore(
       }
     }
 
+    // Retorna uma lição pelo ID
+    // Usado para enriquecer dados das lições obtidas pelo progress
+    function getLessonById(id) {
+      return lessons.value.find((l) => l.id === id)
+    }
+
     /**
      * Retorna a próxima lição desbloqueada com base na atual.
      *
@@ -151,6 +157,7 @@ export const useLessonStore = defineStore(
       rateLesson,
       preloadLessonsForUnits,
       getNextUnlockedLesson,
+      getLessonById,
     }
   },
   {

@@ -198,6 +198,52 @@ components:
           format: binary
           description: Arquivo de imagem PNG ou JPG
 
+    #   Questionário IA:
+    QuestionnaireQuestion:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [multiple, text]
+        text:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+      required:
+        - type
+        - text
+
+    QuestionnaireResponse:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            type: string
+      required:
+        - answers
+
+    QuestionnaireSuggestion:
+      type: object
+      properties:
+        title:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              highlight:
+                type: boolean
+
+
+
+
+
 paths:
   #   Autenticação:
   /login:
@@ -496,6 +542,63 @@ paths:
         200:
           description: Imagem enviada com sucesso
 
+  #   Questionário IA:
+  /questionnaire:
+    get:
+      tags:
+        - Questionário IA
+      summary: Retorna perguntas do questionário IA
+      responses:
+        200:
+          description: Lista de perguntas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuestionnaireQuestion'
+
+  /users/{id}/questionnaire:
+    post:
+      tags:
+        - Questionário IA
+      summary: Envia respostas do questionário e retorna sugestões personalizadas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireResponse'
+            example:
+              answers:
+                - "A) Delegar tarefas de forma eficaz."
+                - "Eu acredito que um líder deve criar um ambiente positivo, dar feedback constante e entender as motivações individuais da equipe."
+      responses:
+        200:
+          description: Sugestões com base nas respostas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuestionnaireSuggestion'
+              example:
+                - title: "Unidade 01: Comunicação e Liderança"
+                  items:
+                    - label: "Ouvir ativamente os membros da equipe"
+                      highlight: true
+                    - label: "Transparência na comunicação"
+                - title: "Unidade 02: Gestão de Conflitos"
+                  items:
+                    - label: "Identificar causas de conflitos recorrentes"
+                      highlight: true
+          
   #   Não utilizado:
   #  /user-courses/{id}/course:
   #    get:

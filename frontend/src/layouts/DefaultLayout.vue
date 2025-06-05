@@ -1,16 +1,21 @@
 <template>
   <v-app>
+    <!-- Modal Global -->
+    <GlobalModal />
+
     <!-- Camada de cor (base ou gradiente) -->
     <div
       class="background-color-layer"
       :style="courseStore.backgroundColorStyle"
     ></div>
     <!-- Camada de imagem  -->
+
     <div
       v-if="courseStore.hasBackgroundImage"
       class="background-image-layer"
       :style="courseStore.backgroundImageStyle"
     ></div>
+
     <!-- App Bar -->
     <AppBar :progress="progress" />
     <v-main>
@@ -26,6 +31,9 @@ import { useCourseStore } from '@/store/course'
 import { useProgressStore } from '@/store/progress'
 import AppBar from '@/components/shared/AppBar.vue'
 //import FloatingMenu from '@/components/shared/FloatingMenu.vue'
+
+// importa o modal global
+import GlobalModal from '@/components/GlobalModal.vue'
 
 // Inicializa cores de fundo
 const courseStore = useCourseStore()

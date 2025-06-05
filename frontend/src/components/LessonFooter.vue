@@ -2,7 +2,7 @@
   <v-bottom-navigation
     v-show="isCompleted"
     height="100"
-    class="bg-info footer-shadow"
+    class="bg-info footer-shadow slide-in"
   >
     <v-container
       fluid
@@ -93,5 +93,19 @@ const info = computed(() => current.value.colors.info)
 }
 .right-radios {
   border-radius: 0 24px 24px 0;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.slide-in {
+  animation: slideInUp 0.5s ease-out;
 }
 </style>

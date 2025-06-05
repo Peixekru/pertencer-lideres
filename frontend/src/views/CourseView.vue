@@ -63,7 +63,7 @@
     <v-container class="mb-12 mt-8 text-center">
       <v-row justify="center">
         <v-col
-          v-for="(item, i) in 3"
+          v-for="(item, i) in 2"
           :key="i"
           cols="12"
           sm="4"
@@ -74,7 +74,7 @@
             rounded="lg"
             style="opacity: 0.5"
           >
-            <p class="text-subtitle-1 text-primary my-2">Funcionalidade {{ i + 1 }}</p>
+            <p class="text-subtitle-1 text-primary my-2">{{ features[i] }}</p>
             <v-icon
               size="48"
               color="primary"
@@ -82,10 +82,12 @@
               mdi-progress-clock
             </v-icon>
             <v-sheet>
+              <!--Voltar com : disabled-->
               <v-btn
-                disabled
+                rounded
                 class="mt-2"
                 variant="text"
+                @click="showComingSoon"
               >
                 Acessar
               </v-btn>
@@ -152,11 +154,15 @@ import { useUnitStore } from '@/store/unit'
 import { useLessonStore } from '@/store/lesson'
 import { useProgressStore } from '@/store/progress'
 import { mapUnitsWithLockState } from '@/domain/progress/mapUnitsWithLockState'
+import { useModalStore } from '@/store/modal'
 
 // Componentes
 import UnitCard from '@/components/UnitCard.vue'
-// Sons dos botões
+// Completa a URL da API
 import { getUrl } from '@/utils/url'
+// Modal
+import ComingSoon from '@/components/devTools/ComingSoonModal.vue'
+// Sons dos botões
 import { useBeepSound } from '@/utils/sounds'
 //Logger
 import logger from '#logger'
@@ -168,9 +174,7 @@ const courseStore = useCourseStore()
 const unitStore = useUnitStore()
 const lessonStore = useLessonStore()
 const progressStore = useProgressStore()
-
-// Sons dos botões
-useBeepSound()
+const modal = useModalStore()
 
 // importação da imagem do branding via store getter
 const { headerImageUrl } = storeToRefs(settingsStore)
@@ -180,6 +184,7 @@ const footerLogoUrl = spaceStore.getFooterLogoUrl()
 const courseTitle = ref('')
 const courseSubtitle = ref('')
 
+// Busca os badges das lições
 const lessonBadges = computed(() => {
   return lessonStore.lessons
     .filter((lesson) => lesson.badge)
@@ -189,6 +194,11 @@ const lessonBadges = computed(() => {
       lessonId: lesson.id,
     }))
 })
+
+// Mostra o modal de "em breve"
+function showComingSoon() {
+  modal.openModal(ComingSoon, { title: 'Funcionalidade em breve' }, { maxWidth: 800 })
+}
 
 /**
  * Lista computada de unidades do curso com base no progresso do aluno.
@@ -222,6 +232,9 @@ onMounted(async () => {
    */
   await lessonStore.preloadLessonsForUnits(unidades.value)
 
+  // Sons dos botões
+  useBeepSound()
+
   logger.stInf('Lista de unidades', unidades.value)
 })
 
@@ -232,6 +245,8 @@ const badges = ref([
   { icon: 'mdi-lock' },
   { icon: 'mdi-water-percent' },
 ])
+// Títilo das features em desenvolvimento
+const features = ref(['Dashboard', 'Tira-dúvidas'])
 </script>
 
 <style scoped>

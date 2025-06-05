@@ -55,6 +55,7 @@
 
     <!-- Footer com navegação e avaliação -->
     <LessonFooter
+      :key="lessonId"
       :goToCourseAfterUnit="goToCourseAfterUnit"
       :nextLesson="nextLesson"
       :nextTitle="nextLesson?.title || ''"

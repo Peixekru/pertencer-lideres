@@ -129,6 +129,7 @@ import { useProgressStore } from '@/store/progress'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/store/auth'
 import { useSettingsStore } from '@/store/settings'
+import { useModalStore } from '@/store/modal'
 import { useBeepSound } from '@/utils/sounds'
 import logger from '#logger'
 
@@ -136,6 +137,7 @@ import logger from '#logger'
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
 const progressStore = useProgressStore()
+const modalStore = useModalStore()
 
 // Acesso à rota atual
 const route = useRoute()
@@ -152,6 +154,9 @@ const isCourseView = computed(() => route.path.startsWith('/course'))
 
 // Atualiza visibilidade do fundo da app-bar com base na rota e scroll
 const handleScroll = () => {
+  // Se o modal estiver aberto, não executa a lógica de fundo
+  if (modalStore.isOpen) return
+  // Se estiver na rota de curso, exibe o fundo se o scroll for maior que 60 pixels
   showBackground.value = !isCourseView.value || window.scrollY > 60
 }
 

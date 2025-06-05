@@ -15,6 +15,7 @@ import { useSettingsStore } from '@/store/settings'
 import { useThemeSwitcher } from '@/composables/useVuetifyDynamicColors'
 // importa o layout padrão
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
+// importa o modal global
 
 // inicializadores
 const route = useRoute()

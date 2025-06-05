@@ -94,6 +94,8 @@ import { useSpaceStore } from '@/store/space'
 import { useAuthStore } from '@/store/auth'
 import { useUserCoursesStore } from '@/store/userCourses'
 import { useSettingsStore } from '@/store/settings'
+import { useModalStore } from '@/store/modal'
+import AiQuest from '@/components/ai/AiQuest.vue'
 
 import { useThemeSwitcher } from '@/composables/useVuetifyDynamicColors'
 
@@ -108,6 +110,7 @@ const spaceStore = useSpaceStore()
 const authStore = useAuthStore()
 const userCoursesStore = useUserCoursesStore()
 const settingsStore = useSettingsStore()
+const modal = useModalStore()
 
 const { applyTheme } = useThemeSwitcher()
 
@@ -156,8 +159,22 @@ const handleLogin = async () => {
         applyTheme('light')
       }
 
-      // Redireciona para o curso
-      router.push('/course')
+      // Redireciona para o curso e após redirecionar, verifica se o questionário já foi feito
+      router.push('/course').then(() => {
+        const hasSeen = localStorage.getItem('ai_questionnaire_completed') === 'true'
+        if (!hasSeen) {
+          modal.openModal(
+            AiQuest,
+            {},
+            {
+              maxWidth: '850px',
+              //height: '800px',
+              //maxHeight: '800px',
+              scrollable: true,
+            }
+          )
+        }
+      })
     }
   } catch (error) {
     alert(error.message || 'Erro ao fazer login.')

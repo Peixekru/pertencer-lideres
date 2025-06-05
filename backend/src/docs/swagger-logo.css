@@ -9,7 +9,7 @@
   /* Local ->  background-image: url("/uploads/app/space/1/login_logo.svg");*/
   background-repeat: no-repeat;
   background-size: contain;
-  filter: brightness(0) invert(1);
+  /*filter: brightness(0) invert(1);*/
   width: 120px;
   height: 40px;
   vertical-align: middle;
